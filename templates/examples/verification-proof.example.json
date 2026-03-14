@@ -1,0 +1,21 @@
+{
+  "phase": "verify",
+  "role": "verifier",
+  "run_id": "run-2026-03-11-example",
+  "created_at": "2026-03-11T12:40:00Z",
+  "sources": [
+    "artifacts/run-2026-03-11/implementation-plan.json"
+  ],
+  "status": "pass",
+  "loop_number": 0,
+  "commands": [
+    {
+      "command": "npm test",
+      "exit_code": 0
+    },
+    {
+      "command": "node tooling/src/cli.js validate manifest",
+      "exit_code": 0
+    }
+  ]
+}

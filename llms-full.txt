@@ -1,0 +1,2114 @@
+# SuperAgent — Complete Documentation
+
+> Generated: 2026-03-14T17:31:53Z
+
+---
+## Source: docs/concepts/architecture.md
+
+# Architecture
+
+SuperAgent is a host-native engineering OS kit. The host environment (Claude, Codex, Gemini, Cursor) remains the execution container. SuperAgent supplies the operating model, guardrails, and artifact contracts.
+
+## Core components
+
+| Component | Purpose |
+|-----------|---------|
+| Roles | Canonical contracts defining what each agent role does and produces |
+| Workflows | Phase entrypoints that sequence roles through delivery |
+| Skills | Reusable procedures (sa:tdd, sa:debugging, sa:verification, sa:brainstorming) |
+| Hooks | Guardrails enforcing protected paths, loop caps, and capture routing |
+| Expertise | 255 curated knowledge modules composed into agent prompts |
+| Templates | Artifact templates for phase outputs and handoff |
+| Schemas | Validation schemas for manifest, hooks, artifacts, and exports |
+| Exports | Generated host packages tailored per supported host |
+| Tooling | CLI for validation, indexing, recall, capture, and status |
+
+## Design influences
+
+| Source | What SuperAgent keeps |
+|--------|----------------------|
+| SuperAgent skill system | Disciplined workflows, TDD, verification, review rigor, skill ergonomics |
+| Spec-Kit | Spec-first development, explicit artifacts, approval gates |
+| Oh My Claude | Host-native prompt structure and operator ergonomics |
+| autoresearch | Research loops, experiment tracking, self-improvement discipline |
+
+## Context and indexing
+
+SuperAgent ships a built-in local index and recall surface. The context-mode integration is an optional adapter — off by default, never required for core install, build, or test paths.
+
+## Design Phase
+
+The design phase runs after specification and before planning. The `designer` role uses open-pencil MCP tools to produce visual designs from the approved spec. Outputs include a `.fig` design file, exported Tailwind JSX/HTML+CSS scaffolds, design tokens JSON, and screenshot PNGs.
+
+The `design-review` workflow validates designs against the spec before planning begins. The existing `review` workflow also checks design-vs-implementation alignment after execution.
+
+open-pencil is integrated as an optional adapter (`open_pencil`) — it is not required for core SuperAgent functionality.
+
+## Key references
+
+- [Roles & Workflows](roles-and-workflows.md)
+- [Artifact Model](artifact-model.md)
+- [Host Exports](../reference/host-exports.md)
+- [Hooks](../reference/hooks.md)
+- [Expertise & Antipatterns](composition-engine.md)
+
+---
+## Source: docs/concepts/artifact-model.md
+
+# Artifact Model
+
+SuperAgent separates operator input, committed repo artifacts, and live run state.
+
+## Human Truth
+
+- `input/` is the read-only operator briefing surface.
+
+## Default Live Run State
+
+Default run state lives outside the repo:
+
+- `~/.superagent/projects/<project-slug>/runs/<run-id>/`
+
+Typical run contents:
+
+- `manifest.json`
+- `sources.json`
+- phase subdirectories such as `clarify/`, `plan/`, `verify/`, `review/`
+- `status.json`
+- `events.ndjson`
+- `summary.md`
+
+## Committed Repo Artifacts
+
+Use `artifacts/` only for committed evidence such as:
+
+- release evidence
+- checked-in examples
+
+## Artifact Rules
+
+- every artifact should declare phase, role, run ID, timestamp, sources, status, and loop number
+- non-trivial claims must cite a source file, source URL, or verification command
+- approval-gated artifacts must record approval status and approver when relevant
+- scratch work must not be confused with durable artifacts
+- learnings belong in `memory/`, not in fresh-run source truth
+
+## Templates
+
+Canonical starting points live under:
+
+- `templates/artifacts/*.md`
+- `templates/artifacts/*.json`
+
+Those templates define the minimum metadata for clarification, research, specs, plan review, execution notes, verification, review, learning promotion, and next-run handoff artifacts.
+
+## Repo-Local Override
+
+Repo-local run state is opt-in only. If an operator deliberately uses a repo-local override, the recommended path is:
+
+- `.superagent-state/`
+
+That path must remain gitignored so a normal run still leaves `git status` clean.
+
+## Retention
+
+- keep committed `artifacts/` focused on release evidence and checked-in examples
+- archive stale or disproven learnings instead of rewriting history in place
+- prune external run-state captures when they no longer provide audit or debugging value
+
+---
+## Source: docs/concepts/composition-engine.md
+
+# Composition Engine
+
+SuperAgent uses a composition engine to assemble the right expertise into each role's context at each phase.
+
+## How expertise loading works
+
+- `clarify` and `discover` start from `input/`, active docs, and `docs/research/`
+- `specify` and `plan` pull only the expertise slices relevant to the stack and risks
+- `review` always considers `expertise/antipatterns/` before broader domain modules
+- `learn` can propose updates to expertise, but may not silently rewrite it
+
+## Anti-patterns first
+
+`expertise/antipatterns/` is first-class review input. It exists to catch:
+
+- fake completion
+- unwired abstractions
+- shallow tests
+- security theater
+- architecture drift
+- AI-coding failure modes
+
+Anti-patterns are loaded into reviewer context before any other domain modules. This ordering ensures that known failure modes are the first lens through which review happens.
+
+## Why scoped loading matters
+
+Brute-force loading of all expertise modules would flood the context window. The composition engine resolves which modules to load based on the task's declared stack and concerns, keeping context tight and relevant. Max 15 modules per dispatch, with token budget enforcement.
+
+## Source material
+
+- Research findings: `docs/research/`
+- Expertise modules: `expertise/`
+- Anti-pattern catalog: `expertise/antipatterns/`
+- Expertise metadata: `expertise/index.yaml`
+
+For the complete module listing and anti-pattern catalog, see the [Expertise Index reference](../reference/expertise-index.md).
+
+---
+## Source: docs/concepts/indexing-and-recall.md
+
+# Indexing and Recall
+
+SuperAgent ships a built-in local indexer so context reduction does not depend on an external commercial tool.
+
+## Current implementation
+
+- storage engine: built-in `node:sqlite`
+- index location: `<state-root>/index/index.sqlite`
+- default state root: `~/.superagent/projects/{project_slug}`
+- override: `--state-root <path>`
+- refresh model: hash-based incremental refresh
+- retrieval model: exact file slices and symbol slices read back from the working tree
+
+## Context tiers
+
+SuperAgent supports three context tiers for recall, enabling token-efficient context loading:
+
+| Tier | Target size | Content | Use case |
+| --- | --- | --- | --- |
+| L0 | ~100 tokens | One-line identifier summary (name, kind, language, line range) | Inventory scans, bulk listing, deciding what to load |
+| L1 | ~500-2k tokens | Structural summary (signature, key fields, purpose, dependencies) | Understanding shape and role without full source |
+| L2 | Full content | Exact line-bounded source slice | Implementation details, debugging, code review |
+
+L2 is the default recall behavior (exact slices). L0 and L1 require summaries to be generated first via `index summarize`.
+
+## Summary generation
+
+The `superagent index summarize` command generates L0 and L1 heuristic summaries for all indexed files and symbols.
+
+```
+superagent index summarize [--state-root <path>] [--refresh]
+```
+
+- Generates summaries for every file and symbol currently in the index
+- Summaries are stored in the index database alongside the source metadata
+- The `--refresh` flag regenerates summaries even if they already exist
+- Summary generation is heuristic-based (no external LLM calls required)
+- Each summary records the content hash at generation time for freshness checking
+
+## Tiered recall
+
+The `--tier` flag on `recall file` and `recall symbol` switches from full-content (L2) recall to summary recall:
+
+```
+superagent recall file <path> --tier L0
+superagent recall file <path> --tier L1
+superagent recall symbol <name> --tier L0
+superagent recall symbol <name> --tier L1
+```
+
+- `--tier` is mutually exclusive with `--start`/`--end` line-range options
+- When `--tier` is specified, the response includes the summary text and a `fresh` field
+- Without `--tier`, recall behaves exactly as before (L2 exact slices)
+
+## Freshness checking
+
+When summaries are recalled via `--tier`, the response includes a `fresh` boolean field:
+
+- `fresh: true` -- the content hash at summary generation time matches the current file hash on disk
+- `fresh: false` -- the file has been modified since the summary was generated; the summary may be stale
+
+Consumers should treat stale summaries as approximate and consider re-running `index summarize --refresh` or falling back to L2 recall for critical decisions.
+
+## Current commands
+
+Implemented now:
+
+- `superagent index build`
+- `superagent index refresh`
+- `superagent index stats`
+- `superagent index summarize`
+- `superagent index search-symbols`
+- `superagent index get-symbol`
+- `superagent index get-file-outline`
+- `superagent recall file`
+- `superagent recall symbol`
+
+Reserved for later host/runtime work:
+
+- adapter-backed summary generation (LLM-powered summaries via optional adapters)
+- directory-level summaries (roll up file summaries into directory-level context)
+- adapter activation flows
+- richer parser inventories
+
+## Extractor coverage
+
+The current core extractor roster is heuristic and built in-repo:
+
+- `builtin-heuristic-javascript`
+- `builtin-heuristic-typescript`
+- `builtin-heuristic-python`
+- `builtin-heuristic-go`
+- `builtin-heuristic-rust`
+- `builtin-heuristic-java`
+- `builtin-heuristic-sql`
+- `builtin-heuristic-json`
+- `builtin-heuristic-yaml`
+- `builtin-heuristic-markdown`
+
+Behavior:
+
+- supported files get file metadata, hashes, outlines, and best-effort symbol extraction
+- unsupported text files can still be added later, but should not claim symbol precision they do not provide
+- markdown headings and top-level structured keys are first-class outline targets
+
+## Output model
+
+The index stores:
+
+- files
+- symbols
+- outlines
+- hashes
+- ingestion runs
+- retrieval logs
+
+Recall returns:
+
+- exact line-bounded slice
+- exact source path
+- exact line start and line end
+- optional surrounding context window
+
+## Ignore and hygiene rules
+
+The built-in index currently skips common non-source or generated trees such as:
+
+- `.git/`
+- `.worktrees/`
+- `node_modules/`
+- `dist/`
+- `build/`
+- `coverage/`
+- `.next/`
+
+If the chosen state root lives inside the repo, SuperAgent skips indexing that path so it does not index its own artifacts.
+
+## Adapter stance
+
+The built-in index is the default and required path.
+
+The optional `context-mode` adapter remains:
+
+- disabled by default
+- external
+- non-required for default install or test paths
+
+See the adapter docs for current status and constraints.
+
+---
+## Source: docs/concepts/observability.md
+
+# Observability
+
+SuperAgent observability is file-based and host-native. All observability requires no external services.
+
+## Current observability surfaces
+
+Implemented now:
+
+- `superagent status --run <id> [--json]`
+- canonical hook definitions for status, capture, compaction, and handoff events
+- external state-root policy for run-local files
+- `superagent capture init` for `status.json` and `events.ndjson` bootstrap
+- `superagent capture event` for event append and status updates
+- `superagent capture route` and `superagent capture output` for large-output artifact capture
+- `superagent capture summary` for `summary.md` and stop-time or compaction summaries
+
+Planned next:
+
+- host-specific native-hook or wrapper wiring that calls the capture commands automatically
+
+## Current status path
+
+The status command reads:
+
+- `<state-root>/runs/<run-id>/status.json`
+
+Use `--state-root <path>` to target a fixture or non-default state location.
+
+The capture command family writes under:
+
+- `<state-root>/runs/<run-id>/status.json`
+- `<state-root>/runs/<run-id>/events.ndjson`
+- `<state-root>/runs/<run-id>/summary.md`
+- `<state-root>/runs/<run-id>/captures/*`
+
+## Design rules
+
+- run-local observability lives outside the repo by default
+- machine-readable status must exist without any server
+- captured output should reduce context flooding, not increase it
+- summaries must point back to captured files instead of pretending the full output stayed in context
+
+---
+## Source: docs/concepts/roles-and-workflows.md
+
+# Roles and Workflows
+
+SuperAgent defines explicit canonical roles and explicit phase workflows. Understanding why these exist and how they interact is key to using the system effectively.
+
+## Why roles?
+
+Roles are isolation boundaries, not personas. Each role has defined inputs, allowed tools, required outputs, escalation rules, and failure conditions. An agent inside a role cannot write to protected paths, cannot skip required outputs, and must escalate when ambiguity conditions are met. The discipline is structural, not instructional.
+
+Separating concerns into roles means that the entity implementing a task is never the same entity reviewing it. This adversarial separation is what makes quality enforcement structural rather than aspirational.
+
+## Why phases?
+
+Phases are artifact checkpoints, not conversation stages. Every phase consumes a named artifact from the previous phase and produces a named artifact for the next. Nothing flows via conversation history. A session can end, a new agent can pick up the artifacts, and delivery continues — because the handoff is explicit, structured, and schema-validated.
+
+## The phase model
+
+The canonical workflow sequence is:
+
+1. **clarify** — resolve ambiguity before committing to a spec
+2. **discover** — gather research and prior art
+3. **specify** — produce a measurable spec with acceptance criteria
+4. **spec-challenge** — adversarial review of the spec
+5. **author** — finalize content, microcopy, and i18n keys
+6. **design** — produce visual designs from the approved spec
+7. **design-review** — validate designs against spec, accessibility, and visual consistency
+8. **plan** — create an implementation plan from the approved spec and designs
+9. **plan-review** — adversarial review of the plan
+10. **execute** — implement the plan
+11. **verify** — QA hard gate with fresh proof
+12. **review** — adversarial quality review
+13. **learn** — capture scoped learnings
+14. **prepare-next** — produce a clean handoff for the next run
+
+## Role routing
+
+The orchestrator dispatches three roles per task: `executor`, `reviewer`, and `verifier`. By default, all three run for every task. The `required_roles` field in a task's YAML frontmatter controls which roles are dispatched, allowing the orchestrator to skip unnecessary roles and save context window budget.
+
+### Auto-detection
+
+The clarifier assigns `required_roles` based on task type:
+
+| Task type | Required roles | Rationale |
+|-----------|---------------|-----------|
+| `feature` | `[executor, reviewer, verifier]` | Full pipeline |
+| `bugfix` | `[executor, reviewer, verifier]` | Full pipeline |
+| `refactor` | `[executor, reviewer, verifier]` | Full pipeline |
+| `docs` | `[executor, verifier]` | No adversarial review needed |
+| `config` | `[executor, verifier]` | No adversarial review needed |
+
+If `security_critical: true`, `reviewer` is always included.
+
+### Constraints
+
+- `verifier` is always present — it is the QA hard gate and cannot be removed
+- Default when `required_roles` is absent: `[executor, reviewer, verifier]` (backward compatible)
+
+## Canonical source
+
+Use the files under `roles/` and `workflows/` as the canonical source for role contracts and phase entrypoints. For exact role and workflow tables, see the [Roles Reference](../reference/roles-reference.md).
+
+---
+## Source: docs/concepts/terminology-policy.md
+
+# SuperAgent Brand and Terminology Guide
+
+## Canonical Terms
+
+Use these terms in all product surfaces:
+
+- SuperAgent
+- host-native engineering OS kit
+- roles
+- workflows
+- skills
+- hooks
+- templates
+- schemas
+- research
+- memory
+- host exports
+
+## Terms That Do Not Describe This Product
+
+Do not use terms that describe SuperAgent as a background service, a web-based control surface, or a long-running process. The product is a host-native kit, and all terminology should reflect that.
+
+## Rules
+
+- SuperAgent is a host-native engineering OS kit, not a server or background service.
+- Use the canonical terms above in all roles, workflows, skills, and documentation.
+- When in doubt, describe what SuperAgent is, not what it is not.
+
+---
+## Source: docs/getting-started/01-installation.md
+
+# Installation
+
+SuperAgent installation is package-oriented.
+
+## Core repo setup
+
+1. Install dependencies:
+   - `npm install`
+2. Validate canonical sources:
+   - `superagent validate manifest`
+   - `superagent validate hooks`
+   - `superagent validate docs`
+3. Build host packages:
+   - `superagent export build`
+4. Check drift before release or commit:
+   - `superagent export --check`
+
+## Optional state-root overrides
+
+When testing indexing, recall, or status flows, you can keep state outside the default location:
+
+- `superagent index build --state-root <path>`
+- `superagent index refresh --state-root <path>`
+- `superagent recall file ... --state-root <path>`
+- `superagent status --run <id> --state-root <path>`
+
+## Runtime model
+
+The host environment is the execution container. SuperAgent provides the operating model, guardrails, exports, and tooling. There are no background processes or services to manage.
+
+---
+## Source: docs/getting-started/02-first-run.md
+
+# First Run
+
+This tutorial walks you through installing SuperAgent, validating your environment, building host exports, and exploring the generated structure.
+
+## What you'll build
+
+A SuperAgent-enabled project with a validated environment, built host exports, and a confirmed-healthy repo surface.
+
+## Prerequisites
+
+- **Node.js >= 18** (20+ recommended)
+- **git**
+- A terminal (bash, zsh, or similar)
+- A project directory where you want to use SuperAgent
+
+## Step 1: Clone and install
+
+Clone the SuperAgent repository and install dependencies:
+
+```bash
+git clone https://github.com/MohamedAbdallah-14/super-agent.git
+cd super-agent
+npm install
+```
+
+Expected output (last lines):
+
+```
+added XX packages in Xs
+```
+
+This installs the minimal runtime dependencies (`ajv`, `yaml`, `gray-matter`) and the built-in CLI tooling.
+
+## Step 2: Run doctor check
+
+The `doctor` command validates the active repo surface in one pass:
+
+```bash
+npx superagent doctor
+```
+
+Expected output:
+
+```
+PASS manifest: Manifest is valid.
+PASS hooks: Hook definitions are valid.
+PASS host-exports: All required host export directories exist.
+```
+
+Doctor checks three things:
+1. The manifest (`superagent.manifest.yaml`) is valid against its schema
+2. Canonical hook definitions match the manifest's required hook roster
+3. Host export directories exist under `exports/hosts/`
+
+If any check fails, doctor tells you exactly which surface to fix.
+
+## Step 3: Validate canonical sources
+
+You can also run individual validators for more detail:
+
+```bash
+npx superagent validate manifest
+```
+
+Expected output:
+
+```
+PASS: Manifest is valid.
+```
+
+```bash
+npx superagent validate hooks
+```
+
+Expected output:
+
+```
+PASS: Hook definitions are valid.
+```
+
+```bash
+npx superagent validate docs
+```
+
+This checks `docs/truth-claims.yaml` for stale command claims and broken local doc links.
+
+## Step 4: Build host exports
+
+Generate native host packages for Claude, Codex, Gemini, and Cursor:
+
+```bash
+npx superagent export build
+```
+
+Expected output:
+
+```
+Generated host exports for claude, codex, gemini, cursor.
+```
+
+This reads canonical role files, workflow files, and the manifest, then writes host-specific packages under `exports/hosts/`:
+
+- **Claude:** `CLAUDE.md`, `.claude/settings.json`, `.claude/agents/*`, `.claude/commands/*`
+- **Codex:** `AGENTS.md`
+- **Gemini:** `GEMINI.md`
+- **Cursor:** `.cursor/rules/superagent-core.mdc`, `.cursor/hooks.json`
+
+## Step 5: Verify exports are fresh
+
+Check that generated host packages match current canonical sources:
+
+```bash
+npx superagent export --check
+```
+
+If this passes with exit code 0, your exports are in sync. If canonical sources changed after the last export, the check fails and tells you to re-run `export build`.
+
+## Step 6: Explore the generated structure
+
+Key directories to understand:
+
+```
+super-agent/
+  roles/              # Canonical role contracts (10 roles)
+  workflows/          # Phase entrypoints (14 workflows)
+  skills/             # Reusable in-host procedures
+  hooks/              # Hook contracts and guard scripts
+  expertise/          # 255 curated domain knowledge modules
+  templates/          # Artifact templates and example payloads
+  schemas/            # Validation schemas (JSON Schema)
+  exports/hosts/      # Generated host packages
+  tooling/            # CLI source
+  docs/               # Documentation (you are here)
+  input/              # Operator briefing surface (read-only)
+  memory/             # Learnings and experiments
+```
+
+## What's next
+
+- **Deploy to your project:** Copy the relevant host export to your project directory. For Claude: `cp -r exports/hosts/claude/.claude ~/your-project/ && cp exports/hosts/claude/CLAUDE.md ~/your-project/`
+- **For Codex:** `cp exports/hosts/codex/AGENTS.md ~/your-project/`
+- **For Gemini:** `cp exports/hosts/gemini/GEMINI.md ~/your-project/`
+- **For Cursor:** `cp -r exports/hosts/cursor/.cursor ~/your-project/`
+
+Then open your AI host in your project directory. Your agent now operates with 10 canonical roles, a 14-phase delivery pipeline, and the full expertise composition engine.
+
+## Host-specific notes
+
+| Host | Primary export | Notes |
+|------|---------------|-------|
+| Claude | `CLAUDE.md` + `.claude/` | Full support including settings, agents, and commands |
+| Codex | `AGENTS.md` | Single-file operating model |
+| Gemini | `GEMINI.md` | Single-file operating model |
+| Cursor | `.cursor/` | Rules file + hooks JSON |
+
+Claude is the primary development host. Codex, Gemini, and Cursor exports are generated from the same canonical sources and maintain behavioral parity.
+
+---
+## Source: docs/guides/memory-and-learnings.md
+
+# Memory and Learnings
+
+SuperAgent keeps learning durable but scoped.
+
+## Memory Layout
+
+- `memory/learnings/proposed/`
+- `memory/learnings/accepted/`
+- `memory/learnings/archived/`
+- `memory/experiments/`
+- `memory/anti-pattern-observations/`
+- `memory/summaries/`
+
+## Rules
+
+- new learnings start as proposed
+- accepted learnings require explicit review and scope tags
+- fresh runs do not auto-load learnings by default
+- experiments must record whether they improved, regressed, or were neutral
+- every learning or experiment must cite the artifacts or verification that justify it
+- stale proposed learnings should be archived instead of silently lingering as pending truth
+
+## Guardrails
+
+- do not silently rewrite canonical guidance from a learning
+- do not broaden a learning beyond its proven scope
+- archive stale or disproven learnings instead of letting them drift
+
+## Promotion Path
+
+1. Capture a proposed learning with scope, evidence, and confidence.
+2. Review it explicitly.
+3. Promote it to `memory/learnings/accepted/` only when the scope and evidence are durable.
+4. Move disproven or obsolete learnings to `memory/learnings/archived/`.
+
+---
+## Source: docs/guides/troubleshooting.md
+
+# Troubleshooting
+
+This guide covers the SuperAgent CLI and host-native tooling surface.
+
+## `superagent validate manifest` fails
+
+Common causes:
+
+- required canonical paths are missing
+- a manifest path resolves outside the project root
+- manifest fields no longer match `schemas/superagent-manifest.schema.json`
+
+What to check:
+
+- `superagent.manifest.yaml`
+- `schemas/superagent-manifest.schema.json`
+- directory names under the repo root
+
+## `superagent validate hooks` fails
+
+Common causes:
+
+- hook YAML parses to `null` or another non-object shape
+- hook file name and `id` do not match
+- required hooks in the manifest do not match files in `hooks/definitions/`
+- a host fallback entry is missing for one of the declared hosts
+
+What to check:
+
+- `hooks/definitions/*.yaml`
+- `schemas/hook.schema.json`
+- `superagent.manifest.yaml`
+
+## `superagent index build` or `refresh` does not index what you expect
+
+Current ignore rules skip common generated or dependency trees such as:
+
+- `.git/`
+- `.worktrees/`
+- `node_modules/`
+- `dist/`
+- `build/`
+- `coverage/`
+- `.next/`
+
+Also note:
+
+- only the current built-in text/code extractor set is indexed
+- the chosen state root is skipped if it lives inside the repo
+- use `--state-root <path>` in tests or custom setups
+
+## `superagent recall file` or `recall symbol` fails
+
+Common causes:
+
+- the index was never built
+- the file or symbol is not present in the current index
+- the wrong state root is being queried
+
+Recommended sequence:
+
+1. `superagent index build --state-root <path>`
+2. `superagent index stats --state-root <path>`
+3. `superagent index search-symbols <query> --state-root <path>`
+4. retry the recall command with the same state root
+
+## `superagent doctor` fails
+
+Current doctor checks:
+
+- manifest validation
+- hook validation
+- external default state-root policy
+- required host export directories under `exports/hosts/`
+
+If doctor fails, inspect the returned check list and fix the specific failing surface instead of bypassing the command.
+
+## Guard hook blocks a write or loop
+
+Current guard wrapper exit codes:
+
+- `42` from `hooks/protected-path-write-guard`
+- `43` from `hooks/loop-cap-guard`
+
+Typical causes:
+
+- trying to write under `input/` or generated host export paths without an approved regeneration flow
+- phase loop counts in run status already meeting the configured cap
+
+## `superagent status --run <id>` fails
+
+The status command reads:
+
+- `<state-root>/runs/<run-id>/status.json`
+
+If it says the run status is missing:
+
+- confirm the run ID
+- confirm the state root
+- confirm the file exists on disk
+- use `--json` for machine-readable output during automation
+
+---
+## Source: docs/reference/configuration-reference.md
+
+# Configuration Reference
+
+SuperAgent configuration currently starts from the canonical manifest:
+
+- `superagent.manifest.yaml`
+
+That manifest is the source of truth for:
+
+- project identity
+- project description and versioning policy
+- canonical repo paths
+- supported hosts
+- canonical workflows and export targets
+- phase and role rosters
+- required hooks
+- protected paths
+- brand-term enforcement for active surfaces
+- optional adapters
+- validation checks
+
+## Path policy
+
+Repo-managed canonical paths live in the repository:
+
+- `input/`
+- `roles/`
+- `workflows/`
+- `skills/`
+- `hooks/`
+- `templates/`
+- `schemas/`
+- `expertise/`
+- `docs/`
+- `exports/`
+- `tooling/`
+- `memory/`
+- `examples/`
+
+The default external run-state root is declared in the manifest as:
+
+- `~/.superagent/projects/{project_slug}`
+
+That path is intentionally outside the repo so normal runs do not dirty adopters' worktrees.
+
+Indexing and recall commands also accept:
+
+- `--state-root <path>`
+
+Use that override for tests, CI fixtures, or operators who need the index somewhere else.
+
+The status command uses the same state-root resolution rules when reading run-local status files.
+
+## Protected paths
+
+The current protected path roster is declared in `superagent.manifest.yaml`:
+
+- `input`
+- `roles`
+- `workflows`
+- `schemas`
+- `exports/hosts`
+
+These paths are reserved for canonical source material or generated host exports and should not be rewritten by ad hoc task output.
+
+Generated host packages live under:
+
+- `exports/hosts/claude`
+- `exports/hosts/codex`
+- `exports/hosts/gemini`
+- `exports/hosts/cursor`
+
+## Dependency policy
+
+The active CLI keeps runtime dependencies small and explicit:
+
+- `ajv` for JSON Schema enforcement
+- `yaml` for canonical manifest and hook parsing
+- `gray-matter` for frontmatter parsing in library tests
+
+Policy:
+
+- prefer built-in Node APIs unless a library meaningfully reduces correctness risk
+- allow small parsing and schema-validation libraries
+- do not add framework, server, or web-stack dependencies to the product surface
+- keep optional adapter integrations external by default
+
+## Adapter policy
+
+The manifest currently declares one optional adapter:
+
+- `context_mode`
+
+It is:
+
+- disabled by default
+- optional
+- external-install mode
+
+SuperAgent must remain useful without the adapter present.
+
+## Versioning and naming guardrails
+
+The manifest also records:
+
+- a versioning policy for the active pre-`1.0` line
+- export targets for each supported host
+- brand-term enforcement rules for active surfaces
+- `manifest_version`, currently `2`, for breaking manifest contract changes
+
+Those fields exist to keep the active repo aligned with the SuperAgent product identity.
+
+The required manifest fields are:
+
+- `project.description`
+- `versioning_policy`
+- `workflows`
+- `export_targets`
+- `prohibited_terms`
+
+Current enforcement scope:
+
+- manifest-declared role files under `roles/`
+- manifest-declared workflow files under `workflows/`
+
+That scope is intentional. The manifest check is a canonical-surface guard for active operating-model content, not a blanket full-repo grep.
+
+Out of scope for this manifest check:
+
+- undeclared helper scripts
+- undeclared config files
+- scratch files
+- generated run artifacts
+
+Maintainers are responsible for policing those surfaces with the separate docs-truth, runtime-surface, and repository review checks.
+
+## Workflows vs phases
+
+- `phases` are the core lifecycle states of the operating model.
+- `workflows` are the canonical callable or review-gated entrypoints that drive those phases.
+
+They overlap heavily, but they are not identical:
+
+- `spec_challenge`, `plan_review`, and `prepare_next` are workflows that sit between or around the core execution phases.
+- Validators and exports should treat manifest-declared workflows as the canonical workflow file roster.
+
+## Current index parser roster
+
+The active manifest currently declares built-in heuristic extractors for:
+
+- JavaScript
+- TypeScript
+- Python
+- Go
+- Rust
+- Java
+- SQL
+- JSON
+- YAML
+- Markdown
+
+---
+## Source: docs/reference/expertise-index.md
+
+# Expertise Index
+
+This reference documents the expertise module system and anti-pattern catalog.
+
+## Metadata
+
+Top-level expertise metadata lives in:
+
+- `expertise/index.yaml`
+
+That index records domain, use cases, review applicability, and freshness date so loading can stay scoped instead of brute-force.
+
+## Module locations
+
+- Domain expertise modules: `expertise/` (organized by domain subdirectory)
+- Anti-pattern modules: `expertise/antipatterns/`
+- Research source material: `docs/research/`
+
+## Loading policy
+
+| Phase | Loads from |
+|-------|-----------|
+| `clarify`, `discover` | `input/`, active docs, `docs/research/` |
+| `specify`, `plan` | Relevant expertise slices based on stack and risks |
+| `review` | `expertise/antipatterns/` first, then broader domain modules |
+| `learn` | Can propose updates to expertise (not silently rewrite) |
+
+## Anti-pattern catalog
+
+The `expertise/antipatterns/` directory contains modules that catch:
+
+- **Fake completion** — claiming done without evidence
+- **Unwired abstractions** — interfaces defined but never connected
+- **Shallow tests** — tests that pass without exercising real behavior
+- **Security theater** — security measures that look good but do not protect
+- **Architecture drift** — implementation diverging from documented architecture
+- **AI-coding failure modes** — patterns specific to LLM-generated code
+
+## Rules
+
+- Expertise modules must be scoped by domain and use case
+- Anti-patterns are always loaded before domain modules during review
+- The composition engine enforces a maximum of 15 modules per dispatch
+- Token budget is enforced per dispatch
+
+For conceptual understanding of how the composition engine works, see [Composition Engine](../concepts/composition-engine.md).
+
+---
+## Source: docs/reference/git-flow.md
+
+# Git-Flow Policy
+
+This document defines the branching model, merge discipline, and changelog rules for the SuperAgent project.
+
+## Branching Model
+
+| Branch | Pattern | Created From | Merges To | Protected |
+|--------|---------|-------------|-----------|-----------|
+| Main | `main` | — | — | Yes |
+| Develop | `develop` | `main` (once) | — | Yes |
+| Feature | `feat/<slug>` or `feature/<slug>` | `develop` | `develop` | No |
+| Codex | `codex/<slug>` | `develop` | `develop` | No |
+| Release | `release/<version>` | `develop` | `main` + `develop` | No |
+| Hotfix | `hotfix/<slug>` | `main` | `main` + `develop` | No |
+
+## Merge Rules
+
+- All merges to `develop` and `main` use `--no-ff` to preserve merge commits
+- Merges happen only after the full Executor, Verifier, Reviewer gate passes
+- No role performs the merge — it is a post-review integration step
+
+## Conventional Commits
+
+All commit messages must follow the conventional commits specification:
+
+```
+<type>(<optional scope>): <description>
+```
+
+Allowed types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, `perf`, `build`
+
+## Changelog Rules
+
+- Format: Keep a Changelog (keepachangelog.com)
+- Every user-facing change must have an entry under `[Unreleased]`
+- Valid categories: Added, Changed, Deprecated, Removed, Fixed, Security
+- The executor updates the changelog; the verifier validates it; the reviewer flags quality issues
+
+## Enforcement
+
+- **Tooling:** `superagent validate branches`, `superagent validate commits`, `superagent validate changelog`
+- **CI:** All three validators run on pull requests; `--require-entries` blocks feature/codex/hotfix branches without changelog entries
+- **Roles:** Each role has documented git-flow responsibilities in its contract
+
+---
+## Source: docs/reference/hooks.md
+
+# Hooks Reference
+
+SuperAgent defines canonical hook contracts in `hooks/definitions/*.yaml`.
+
+These hook definitions are product contracts first. Host-specific native hooks or wrapper commands must preserve the same behavior.
+
+## Canonical hook roster
+
+| Hook ID | Purpose | Failure mode |
+| --- | --- | --- |
+| `session_start` | Initialize run-local status capture and bootstrap summaries | capture |
+| `pre_tool_capture_route` | Route large tool output away from model context | warn |
+| `post_tool_capture` | Append tool execution events and captured output metadata | capture |
+| `pre_compact_summary` | Summarize captured state before compaction or handoff | warn |
+| `stop_handoff_harvest` | Persist final handoff and stop-time observability data | capture |
+| `protected_path_write_guard` | Block writes to protected canonical paths outside approved flows | block |
+| `loop_cap_guard` | Block extra iterations after the configured loop cap | block |
+
+## Source of truth
+
+- hook contracts: `hooks/definitions/*.yaml`
+- schema: `schemas/hook.schema.json`
+- required hook roster: `superagent.manifest.yaml`
+- validation command: `superagent validate hooks`
+
+## Host fallback policy
+
+Every canonical hook definition includes `host_fallback` guidance for:
+
+- Claude
+- Codex
+- Gemini
+- Cursor
+
+Fallbacks may be native hooks or wrapper commands, but they must preserve:
+
+- the same trigger intent
+- the same protected-path policy
+- the same loop-cap policy
+- the same observable outputs or an explicitly documented equivalent
+
+## Current implementation status
+
+Implemented now:
+
+- canonical hook definitions and schema validation
+- manifest-level required hook roster
+- CLI validation through `superagent validate hooks`
+- capture/status file writers through:
+  - `superagent capture init`
+  - `superagent capture event`
+  - `superagent capture route`
+  - `superagent capture output`
+  - `superagent capture summary`
+- wrapper guard scripts:
+  - `hooks/protected-path-write-guard`
+  - `hooks/loop-cap-guard`
+
+Planned next:
+
+- wrapper/native execution helpers
+
+## Guardrail note
+
+Hook definitions are the authoritative product contracts. The canonical definitions above take precedence over any other hook documentation.
+
+## Current guard exit codes
+
+- `hooks/protected-path-write-guard`
+  - `0` allow
+  - `42` block
+- `hooks/loop-cap-guard`
+  - `0` allow
+  - `43` block
+
+---
+## Source: docs/reference/host-exports.md
+
+# Host Exports
+
+SuperAgent now includes a canonical export compiler for host packages under:
+
+- `exports/hosts/claude/`
+- `exports/hosts/codex/`
+- `exports/hosts/gemini/`
+- `exports/hosts/cursor/`
+
+## Current commands
+
+- `superagent export build`
+- `superagent export --check`
+
+## What `build` does
+
+The compiler currently:
+
+- validates the manifest
+- validates canonical hook definitions
+- reads canonical role files
+- reads canonical workflow files
+- writes host-specific package files under `exports/hosts/*`
+- writes `host-package.json`
+- writes `export.manifest.json`
+- records source hashes for drift detection
+
+## What `--check` does
+
+The drift check:
+
+- verifies the generated package metadata exists for every host
+- verifies the listed generated files still exist
+- compares current source hashes against each host export manifest
+- fails non-zero when canonical sources changed after the last export
+
+## Current host package shapes
+
+Current generated highlights:
+
+- Claude: `CLAUDE.md`, `.claude/settings.json`, `.claude/agents/*`, `.claude/commands/*`
+- Codex: `AGENTS.md`
+- Gemini: `GEMINI.md`
+- Cursor: `.cursor/rules/superagent-core.mdc`, `.cursor/hooks.json`
+
+## Scope note
+
+The compiler generates the canonical host packages under `exports/hosts/*`.
+
+The only root host bootstrap retained is `.claude/settings.json`, which mirrors the generated Claude settings contract.
+
+---
+## Source: docs/reference/launch-checklist.md
+
+# Discovery and Launch Checklist
+
+End-to-end checklist for launching a SuperAgent release into the wild.
+
+---
+
+## 1. Pre-Launch Verification
+
+Complete these before any public announcement:
+
+- [ ] **npx works:** Run `npx @superagent-os/cli --version` from a clean machine (no local clone).
+- [ ] **GitHub Release exists:** A tagged release with release notes is published on the repo.
+- [ ] **README polished:** README.md has clear install instructions, feature summary, and badges (npm version, license, CI status).
+- [ ] **CHANGELOG updated:** Latest version entry is present with all notable changes.
+- [ ] **CI green:** All tests and linting pass on the main branch.
+- [ ] **Marketplace configs published:** All automated channels from the marketplace listings guide are live (MCP Registry, Smithery, Claude Code Plugin).
+- [ ] **Host exports current:** `exports/hosts/` directories contain the latest generated configs for all supported hosts.
+- [ ] **License file present:** `LICENSE` matches the declared license in `package.json`.
+
+---
+
+## 2. Awesome List Submissions
+
+Submit pull requests to these curated lists (one PR per list, follow each repo's contributing guidelines):
+
+### awesome-claude-code
+- **Repo:** `github.com/anthropics/awesome-claude-code` (or the most-starred community fork)
+- **Section:** Tools / Plugins / Extensions
+- **Entry format:** `[SuperAgent](https://github.com/MohamedAbdallah-14/super-agent) - Host-native engineering OS kit with 10 roles, 14 phases, and 255 expertise modules.`
+- **Tips:** Keep the description under 120 characters. Link directly to the repo.
+
+### awesome-ai-agents
+- **Repo:** `github.com/e2b-dev/awesome-ai-agents`
+- **Section:** Developer Tools / Coding Agents
+- **Entry format:** Follow the existing table format in the README.
+
+### awesome-llm-apps
+- **Repo:** `github.com/Shubhamsaboo/awesome-llm-apps`
+- **Section:** Developer Tools
+- **Entry format:** Follow the existing list format.
+
+---
+
+## 3. Hacker News "Show HN"
+
+### Timing
+- **Best days:** Tuesday through Thursday
+- **Best time:** 8:00-9:00 AM ET (when the US East Coast audience is waking up)
+- **Avoid:** Weekends, holidays, and days with major tech news
+
+### Title format
+```
+Show HN: SuperAgent – Engineering OS kit for AI coding agents (Claude, Codex, Gemini, Cursor)
+```
+
+### First comment
+Post a comment immediately after submission explaining:
+1. What problem SuperAgent solves (AI agents lack structured engineering workflows)
+2. How it works (10 canonical roles, 14-phase pipeline, 255 expertise modules)
+3. What makes it different (host-native, works across Claude/Codex/Gemini/Cursor)
+4. Quick install: `npx @superagent-os/cli init`
+5. Invite feedback -- HN readers appreciate genuine requests for input
+
+### Guidelines
+- Do not ask for upvotes (against HN rules).
+- Respond to every comment within the first 2 hours.
+- Be honest about limitations and what is not yet built.
+
+---
+
+## 4. Dev.to Technical Post
+
+### Suggested outline
+
+**Title:** "How I Built an Engineering OS for AI Coding Agents"
+
+1. **Hook** -- The problem: AI agents write code but lack engineering discipline.
+2. **Architecture overview** -- 10 roles, 14 phases, expertise modules, quality gates.
+3. **Code walkthrough** -- Show a real workflow: how a feature moves from requirements through TDD to deployment.
+4. **Host-native approach** -- Explain why one kit works across Claude, Codex, Gemini, and Cursor.
+5. **Results** -- Concrete metrics or before/after comparisons.
+6. **Getting started** -- `npx @superagent-os/cli init` with a 3-step quickstart.
+7. **Call to action** -- Star the repo, try it, file issues.
+
+### Tags
+`ai`, `productivity`, `devtools`, `opensource`
+
+### Tips
+- Include at least one diagram or screenshot.
+- Cross-post to your blog if you have one (Dev.to supports canonical URLs).
+- Respond to all comments within 24 hours.
+
+---
+
+## 5. Social Media
+
+### Twitter / X Thread
+
+Structure as a 5-7 tweet thread:
+
+1. **Hook tweet:** One-liner about the problem + link to repo.
+2. **What it is:** Brief description of SuperAgent.
+3. **Architecture:** 10 roles, 14 phases, 255 modules (include a diagram image).
+4. **Demo:** Short GIF or screenshot of a workflow in action.
+5. **Multi-host:** Works with Claude, Codex, Gemini, and Cursor.
+6. **Install:** `npx @superagent-os/cli init`
+7. **Ask:** "What workflows would you add?" -- invite engagement.
+
+**Timing:** Post between 9-11 AM ET on weekdays.
+
+### LinkedIn
+
+- Write a single long-form post (not a thread).
+- Lead with the problem, not the product.
+- Include 3-5 bullet points on key features.
+- End with the install command and repo link.
+- Tag relevant people and companies (Anthropic, OpenAI, Google DeepMind).
+
+### Reddit
+
+Submit to these subreddits (read each sub's rules first):
+
+| Subreddit | Post type | Notes |
+|-----------|-----------|-------|
+| r/ClaudeAI | Link post | Flair as "Tool/Resource" if available |
+| r/LocalLLaMA | Text post | Emphasize the open-source, host-agnostic angle |
+| r/programming | Link post | Focus on engineering discipline, not AI hype |
+| r/devtools | Link post | Emphasize developer productivity |
+
+**Reddit guidelines:**
+- Do not post to multiple subreddits on the same day (looks spammy).
+- Space posts 1-2 days apart.
+- Engage genuinely with all comments.
+- Do not use marketing language -- be technical and direct.
+
+---
+
+## 6. Metrics to Track
+
+Monitor these metrics weekly for the first month, then monthly:
+
+### GitHub
+- **Stars:** Track weekly growth rate, not just total.
+- **Forks:** Indicator of serious users exploring the code.
+- **Issues opened:** Both bugs and feature requests signal engagement.
+- **Pull requests:** External PRs indicate community adoption.
+- **Clones and traffic:** Available in the repo Insights tab.
+
+### npm
+- **Weekly downloads:** Available at `npmjs.com/package/@superagent-os/cli`.
+- **Download trend:** Use `npm-stat.com` for historical charts.
+- **Dependent packages:** Other packages that list SuperAgent as a dependency.
+
+### Marketplace
+- **Claude Code Plugin installs:** Check plugin analytics if available.
+- **MCP Registry page views:** Monitor via registry dashboard.
+- **Smithery installs/views:** Check Smithery analytics dashboard.
+- **Cursor Marketplace installs:** Available in the Cursor publisher dashboard.
+
+### Content
+- **HN points and comments:** Track within 24 hours of posting.
+- **Dev.to views, reactions, and comments:** Track within 1 week.
+- **Twitter impressions and engagement:** Track within 48 hours.
+- **Reddit upvotes and comments:** Track within 48 hours per subreddit.
+
+### Success benchmarks (first 30 days)
+| Metric | Target |
+|--------|--------|
+| GitHub stars | 100+ |
+| npm weekly downloads | 50+ |
+| Issues opened (external) | 10+ |
+| External PRs | 2+ |
+| HN points | 50+ |
+
+---
+## Source: docs/reference/marketplace-listings.md
+
+# Marketplace Listings Guide
+
+This guide covers every distribution channel for SuperAgent, split into automated (config-driven) and manual-submission channels.
+
+---
+
+## Automated (Config-Based) Channels
+
+### Claude Code Plugin
+
+SuperAgent ships as a first-class Claude Code plugin.
+
+- **Config file:** `.claude-plugin/plugin.json`
+- **Install command:** `/plugin install superagent`
+- **Publishing:** Automatic on `npm publish` -- the Claude Code plugin registry reads from npm.
+- **Verification:** After publishing, run `/plugin install superagent` in a fresh Claude Code session and confirm all skills load.
+
+### MCP Registry
+
+The MCP Registry is the canonical directory for Model Context Protocol servers.
+
+- **Config file:** `server.json` (repo root)
+- **Schema:** `https://registry.modelcontextprotocol.io/schema/server.json`
+- **Publish command:**
+  ```bash
+  npx mcp-publisher publish
+  ```
+- **Verification:** Search for "superagent" at `https://registry.modelcontextprotocol.io` after publishing.
+
+### Smithery.ai
+
+Smithery is a marketplace for MCP-compatible tools and servers.
+
+- **Config file:** `smithery.yaml` (repo root)
+- **Publish command:**
+  ```bash
+  smithery mcp publish
+  ```
+- **Verification:** Confirm the listing appears at `https://smithery.ai` with correct metadata (name, description, tags, version).
+
+---
+
+## Manual Submission Channels
+
+### Cursor Marketplace
+
+- **Submission URL:** `https://cursor.com/marketplace/publish`
+- **Package source:** `exports/hosts/cursor/`
+- **Steps:**
+  1. Ensure `exports/hosts/cursor/` contains the latest generated rules and settings.
+  2. Navigate to the Cursor Marketplace publish page.
+  3. Upload the packaged export and fill in metadata (name, description, version, screenshots).
+  4. Submit for review.
+- **Turnaround:** Typically 1-3 business days for initial review.
+
+### Codex CLI Skills
+
+- **Submission URL:** `https://developers.openai.com/codex/skills/`
+- **Package source:** `exports/hosts/codex/`
+- **Steps:**
+  1. Ensure `exports/hosts/codex/` contains the latest generated instructions and configs.
+  2. Log in to the OpenAI developer portal.
+  3. Navigate to the Codex Skills section and create a new skill listing.
+  4. Upload the package, provide metadata, and submit.
+- **Notes:** Follow OpenAI's skill packaging guidelines for file structure requirements.
+
+### Gemini CLI Extensions
+
+- **Install mechanism:** `gemini extensions install <GitHub URL>`
+- **Discovery:** Auto-discovered by GitHub stars and activity metrics.
+- **Steps:**
+  1. Ensure `exports/hosts/gemini/` is up to date.
+  2. Verify the GitHub repo is public and the README clearly describes installation.
+  3. Users install directly from the repo URL -- no separate submission portal.
+- **Boosting discovery:** Star count, forks, and recent commit activity influence ranking.
+
+### skills.sh
+
+- **Discovery:** Auto-discovered from public GitHub repos.
+- **Install command:**
+  ```bash
+  npx skills add MohamedAbdallah-14/super-agent
+  ```
+- **Steps:**
+  1. Ensure the repo is public on GitHub.
+  2. Verify the `package.json` has correct `name`, `description`, and `keywords` fields.
+  3. No manual submission required -- skills.sh indexes public repos automatically.
+- **Verification:** Run the install command above and confirm skills load correctly.
+
+### Homebrew (macOS)
+
+**Setup (one-time, after first npm publish):**
+
+1. Create repo `homebrew-superagent` on GitHub
+2. Get the SHA256 of the npm tarball:
+   ```bash
+   curl -sL https://registry.npmjs.org/@superagent-os/cli/-/cli-0.1.0.tgz | shasum -a 256
+   ```
+3. Update the SHA256 in `homebrew/superagent.rb`
+4. Copy `homebrew/superagent.rb` to `homebrew-superagent/Formula/superagent.rb`
+5. Push to GitHub
+
+**Users install:**
+```bash
+brew tap MohamedAbdallah-14/superagent
+brew install superagent
+```
+
+---
+
+## Post-Publish Checklist
+
+Run through this checklist after every `npm publish`:
+
+- [ ] **npm:** Confirm package is live at `https://www.npmjs.com/package/@superagent-os/cli`
+- [ ] **npx smoke test:** Run `npx @superagent-os/cli --version` from a clean environment
+- [ ] **Claude Code Plugin:** Run `/plugin install superagent` and verify skills load
+- [ ] **MCP Registry:** Run `npx mcp-publisher publish` and verify listing
+- [ ] **Smithery:** Run `smithery mcp publish` and verify listing
+- [ ] **GitHub Release:** Ensure a GitHub Release exists with tag matching the npm version
+- [ ] **Cursor Marketplace:** If major release, re-submit updated package from `exports/hosts/cursor/`
+- [ ] **Codex Skills:** If major release, re-submit updated package from `exports/hosts/codex/`
+- [ ] **Gemini:** Verify `exports/hosts/gemini/` is current in the latest commit
+- [ ] **skills.sh:** Run `npx skills add MohamedAbdallah-14/super-agent` to confirm discovery
+- [ ] **Homebrew:** Update SHA256 in `homebrew/superagent.rb` and push to `homebrew-superagent` tap repo
+- [ ] **CHANGELOG:** Verify `CHANGELOG.md` is updated with the new version entry
+- [ ] **Social announcement:** Post release notes to relevant channels (see launch checklist)
+
+---
+## Source: docs/reference/release-process.md
+
+# Release Process
+
+## Tag Naming
+
+SuperAgent uses semantic versioning: `v{MAJOR}.{MINOR}.{PATCH}`
+
+Legacy tags (V5.1, V6.x, etc.) are historical artifacts and are ignored by validators.
+
+## Release Workflow
+
+1. Create `release/<version>` branch from `develop`
+2. Update `CHANGELOG.md`: move `[Unreleased]` entries to `[<version>] - YYYY-MM-DD`
+3. Add a fresh empty `[Unreleased]` section at the top
+4. Update version in `superagent.manifest.yaml` and `package.json`
+5. Commit: `chore: prepare release <version>`
+6. Merge to `main` with `--no-ff`
+7. Tag: `git tag -a v<version> -m "v<version>"`
+8. Merge `main` back to `develop` with `--no-ff`
+9. Delete the release branch
+
+## Hotfix Workflow
+
+1. Create `hotfix/<slug>` branch from `main`
+2. Fix the issue with conventional commits
+3. Update `CHANGELOG.md` with the fix under `[Unreleased]`
+4. Follow the same merge/tag/merge-back pattern as releases
+5. Delete the hotfix branch
+
+## Bootstrap (First SuperAgent Release)
+
+When no SuperAgent release tag exists yet:
+- Diff-aware changelog validation diffs against the initial commit or `develop` creation point
+- Legacy tags are not considered release boundaries
+- The first release tag will be `v1.0.0` (or `v0.1.0` if pre-stable)
+
+---
+## Source: docs/reference/roles-reference.md
+
+# Roles Reference
+
+This is the lookup reference for canonical roles, workflows, and their contracts.
+
+## Canonical roles
+
+| Role | Purpose |
+|------|---------|
+| `clarifier` | Resolves ambiguity before spec production |
+| `researcher` | Gathers source-backed findings and prior art |
+| `specifier` | Produces measurable specs with acceptance criteria |
+| `content-author` | Produces finalized i18n keys, microcopy, glossary, state coverage, and accessibility copy |
+| `designer` | Transforms approved spec into visual designs using open-pencil MCP tools. Produces `.fig` files, exported code scaffolds, and design tokens |
+| `planner` | Creates implementation plans from approved spec and designs |
+| `executor` | Implements the plan (orchestrator "Dev" phase) |
+| `verifier` | QA hard gate — always mandatory (orchestrator "QA" phase) |
+| `reviewer` | Adversarial quality review (orchestrator "Reviewer" phase) |
+| `learner` | Captures scoped learnings for future runs |
+
+## Canonical workflows
+
+| Workflow | Runs after | Description |
+|----------|-----------|-------------|
+| `clarify` | — | Resolve ambiguity |
+| `discover` | `clarify` | Gather research |
+| `specify` | `discover` | Produce spec |
+| `spec-challenge` | `specify` | Adversarial spec review |
+| `author` | `spec-challenge` | Content authoring |
+| `design` | `author` | Visual design from approved spec |
+| `design-review` | `design` | Validate designs against spec, accessibility, visual consistency |
+| `plan` | `design-review` | Create implementation plan |
+| `plan-review` | `plan` | Adversarial plan review |
+| `execute` | `plan-review` | Implement the plan |
+| `verify` | `execute` | QA hard gate |
+| `review` | `verify` | Adversarial quality review |
+| `learn` | `review` | Capture scoped learnings |
+| `prepare-next` | `learn` | Produce clean next-run handoff |
+
+## Role routing valid values
+
+- `executor` — implements the task (orchestrator "Dev" phase)
+- `reviewer` — adversarial quality review (orchestrator "Reviewer" phase)
+- `verifier` — QA hard gate, always mandatory (orchestrator "QA" phase)
+
+## Contract source files
+
+- Role contracts: `roles/<role-name>.md`
+- Workflow entrypoints: `workflows/<workflow-name>.md`
+- Manifest roster: `superagent.manifest.yaml`
+
+For conceptual understanding of how roles and workflows interact, see [Roles and Workflows concepts](../concepts/roles-and-workflows.md).
+
+---
+## Source: docs/reference/skills.md
+
+# Skills
+
+SuperAgent uses skills as reusable in-host procedures.
+
+The active thesis is:
+
+- use SuperAgent inside your AI host
+- keep the operating model in canonical repo skills
+
+## Active Skills
+
+These skills remain on the active surface:
+
+| Skill | Purpose |
+| --- | --- |
+| `sa:using-skills` | Ensures skill discovery happens before work starts |
+| `sa:brainstorming` | Turns briefings into approved designs before implementation |
+| `scan-project` | Builds a project profile from the repo and `input/` |
+| `sa:writing-plans` | Produces execution-grade implementation plans |
+| `sa:debugging` | Runs a disciplined observe-hypothesize-test-fix loop |
+| `sa:tdd` | Enforces RED -> GREEN -> REFACTOR for implementation work |
+| `sa:verification` | Requires fresh proof before completion claims |
+| `sa:design` | Guides the designer role through open-pencil MCP workflow to produce design artifacts |
+| `prepare-next` | Produces a clean next-run handoff without auto-loading stale context |
+| `run-audit` | Runs a structured codebase audit producing source-backed findings with remediation |
+| `self-audit` | Runs a worktree-isolated audit-fix loop — validates, audits, fixes, verifies, and merges back only on green |
+
+## Rules
+
+- Skills must reference `input/`, canonical roles/workflows, or external state-root conventions.
+- Skills must not instruct users to run background services or wrapper scripts that are not part of the canonical workflow surface.
+- When a skill becomes contradictory to the current operating model, remove it from `skills/`.
+
+---
+## Source: docs/reference/templates.md
+
+# Templates
+
+SuperAgent keeps two active template classes:
+
+- `templates/artifacts/` for run outputs and handoffs
+- `templates/examples/` for schema-aligned example payloads
+
+## Artifact Templates
+
+Active artifact templates cover:
+
+- clarification
+- research
+- spec
+- spec challenge
+- implementation plan
+- plan review
+- execution notes
+- verification proof
+- review findings
+- learning proposal
+- accepted learning
+- next-run handoff
+
+Each template requires run metadata, sources, loop number, and approval status where applicable.
+
+## Example Payloads
+
+Schema-backed examples under `templates/examples/` exist to keep schemas, examples, and validation in sync.
+
+---
+## Source: docs/reference/tooling-cli.md
+
+# SuperAgent CLI
+
+The `superagent` CLI is minimal on purpose. It exists to validate and export the host-native OS kit.
+
+## Current command surface
+
+| Command | Status | Behavior |
+| --- | --- | --- |
+| `superagent validate manifest` | implemented | Validates `superagent.manifest.yaml` against its schema and checks required repo paths exist. |
+| `superagent validate hooks` | implemented | Validates canonical hook definitions against `schemas/hook.schema.json` and the manifest hook roster. |
+| `superagent validate docs` | implemented | Validates `docs/truth-claims.yaml`, checks documented command claims against the active CLI surface, and rejects broken local doc links. |
+| `superagent validate brand` | implemented | Enforces canonical product naming on the SuperAgent surface. |
+| `superagent validate runtime` | implemented | Rejects non-canonical runtime wrappers, repo-local task/state paths, and forbidden runtime-only package surfaces. |
+| `superagent validate branches` | implemented | Validates the current (or `--branch`-specified) branch name against the allowed git-flow patterns. |
+| `superagent validate commits` | implemented | Validates conventional commit format for commits in the range `--base..--head` (or auto-detected base to HEAD). |
+| `superagent validate changelog` | implemented | Validates `CHANGELOG.md` structure; with `--require-entries` and `--base`, enforces new entries since the base. |
+| `superagent validate artifacts` | reserved | Exits `2` until artifact-template and example validation expands. |
+| `superagent export build` | implemented | Generates host packages under `exports/hosts/*` from canonical sources. |
+| `superagent export --check` | implemented | Verifies generated host packages still match current canonical source hashes. |
+| `superagent index build` | implemented | Builds a local SQLite-backed index under the configured state root. |
+| `superagent index refresh` | implemented | Refreshes indexed files using stored content hashes. |
+| `superagent index stats` | implemented | Reports file, symbol, outline, and summary_counts for the current index. |
+| `superagent index summarize` | implemented | Generates L0/L1 heuristic summaries for all indexed files and symbols. |
+| `superagent index search-symbols` | implemented | Searches indexed symbol names. |
+| `superagent index get-symbol` | implemented | Returns a stored symbol record by name or ID. |
+| `superagent index get-file-outline` | implemented | Returns indexed outline entries for a file. |
+| `superagent recall file` | implemented | Returns an exact line-bounded slice from an indexed file. Supports `--tier L0\|L1` for summary recall. |
+| `superagent recall symbol` | implemented | Returns an exact slice for an indexed symbol match. Supports `--tier L0\|L1` for summary recall. |
+| `superagent doctor` | implemented | Validates the active repo surface for manifest, hooks, state-root policy, and host export directory presence. |
+| `superagent status` | implemented | Reads run status directly from `<state-root>/runs/<run-id>/status.json`. |
+| `superagent capture init` | implemented | Creates a run ledger with `status.json`, `events.ndjson`, and a captures directory under the configured state root. |
+| `superagent capture event` | implemented | Appends a run event and can update phase, status, and loop counts in `status.json`. |
+| `superagent capture route` | implemented | Reserves a run-local capture file path for large tool output. |
+| `superagent capture output` | implemented | Writes captured tool output to a run-local file and records a `post_tool_capture` event. |
+| `superagent capture summary` | implemented | Writes `summary.md` and records the chosen summary or handoff event. |
+
+## Exit codes
+
+- `0`: requested check passed
+- `1`: invalid input or validation failure
+- `2`: command surface exists but the implementation is intentionally not complete yet
+
+## Root discovery
+
+The CLI resolves the project root by walking upward from the current working directory until it finds `superagent.manifest.yaml`. This keeps checks usable from nested directories inside the repo.
+
+## State-root override
+
+Indexing and recall commands accept `--state-root <path>` so operators can keep index state wherever they want. If omitted, SuperAgent uses the manifest default outside the repo.
+
+`superagent status` accepts the same override when reading run-local status files.
+
+`superagent capture *` accepts the same override when writing run-local status, events, summaries, and captured output files.
+
+`superagent export build` and `superagent export --check` work from the current project root and write under `exports/hosts/*`.
+
+## Current scope limits
+
+- The CLI is a validation and export tool with no background processes.
+- Validation is the first active capability because it prevents fake green states while the rest of the kit is still being rebuilt.
+- Reserved commands are documented here so adopters can tell the difference between real behavior and planned behavior.
+
+## Docs truth source
+
+Executable documentation claims are registered in:
+
+- `docs/truth-claims.yaml`
+
+`superagent validate docs` uses that file plus active markdown link checks to prevent stale command and path claims from silently drifting.
+
+---
+## Source: README.md
+
+# SuperAgent
+
+**The engineering OS kit for your AI coding agents.**
+
+[![CI](https://img.shields.io/github/actions/workflow/status/MohamedAbdallah-14/super-agent/ci.yml?branch=main&label=CI)](https://github.com/MohamedAbdallah-14/super-agent/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/MohamedAbdallah-14/super-agent/blob/main/LICENSE)
+[![Version](https://img.shields.io/badge/version-0.1.0--alpha-orange)](https://github.com/MohamedAbdallah-14/super-agent/blob/main/CHANGELOG.md)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen?logo=node.js)](https://nodejs.org/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/MohamedAbdallah-14/super-agent/blob/main/CONTRIBUTING.md)
+
+![Claude](https://img.shields.io/badge/Claude-supported-5436DA?logo=anthropic)
+![Codex](https://img.shields.io/badge/Codex-supported-00A36C)
+![Gemini](https://img.shields.io/badge/Gemini-supported-4285F4?logo=google)
+![Cursor](https://img.shields.io/badge/Cursor-supported-FF6B35)
+
+<!-- Demo GIF: record with bash assets/record-demo.sh when asciinema + agg are installed -->
+
+SuperAgent is a host-native engineering OS kit that gives AI coding agents canonical roles, phased workflows, and enforceable quality gates. Install once, export to Claude, Codex, Gemini, or Cursor, and your agent runs the same way your best engineer does.
+
+---
+
+## Why SuperAgent?
+
+AI coding agents fail in the same five ways every time. SuperAgent makes each failure mode structurally impossible.
+
+**Ambiguous specs become wrong code.** The clarifier role escalates unresolved ambiguity instead of assuming. No spec is produced until material questions are answered. Escalation is a required output, not an option.
+
+**Context floods the window.** A 4-layer composition engine assembles only the relevant expertise modules per role per phase from a library of 255 curated modules. The executor gets modules on how to build; the reviewer gets modules on what to flag. Max 15 modules per dispatch, token budget enforced.
+
+**Output quality varies randomly.** The reviewer role is never the phase author. Adversarial review runs at three chokepoints — spec-challenge, plan-review, and final review — always by a different model or model family. Nine hard approval gates block advancement until artifacts are explicitly cleared.
+
+**Good solutions don't persist across runs.** Proposed learnings start isolated. Only explicitly reviewed, scope-tagged learnings get promoted into future runs. Stale or disproven learnings are archived. The system improves per-project without silently drifting.
+
+**Nothing prevents structural failures.** Seven hook contracts enforce protected paths (exit 42), loop caps (exit 43), and session observability. Hooks are enforcement, not suggestions.
+
+---
+
+## Quickstart
+
+**1. Install**
+
+```bash
+git clone https://github.com/MohamedAbdallah-14/super-agent.git
+cd super-agent && npm install
+```
+
+**2. Build host exports**
+
+```bash
+npx superagent export build
+# Generated host exports for claude, codex, gemini, cursor.
+```
+
+**3. Deploy to your project (example: Claude)**
+
+```bash
+cp -r exports/hosts/claude/.claude ~/your-project/
+cp exports/hosts/claude/CLAUDE.md ~/your-project/
+```
+
+**4. Verify**
+
+```bash
+npx superagent doctor
+# PASS manifest: Manifest is valid.
+# PASS hooks: Hook definitions are valid.
+# PASS host-exports: All required host export directories exist.
+```
+
+Open your AI host in your project directory. Your agent now operates with 10 canonical roles, 255 expertise modules, and a 14-phase delivery pipeline.
+
+---
+
+## How It Works
+
+**Roles are isolation boundaries, not personas.** Each role has defined inputs, allowed tools, required outputs, escalation rules, and failure conditions. An agent inside a role cannot write to protected paths, cannot skip required outputs, and must escalate when ambiguity conditions are met. The discipline is structural, not instructional.
+
+**Phases are artifact checkpoints, not conversation stages.** Every phase consumes a named artifact from the previous phase and produces a named artifact for the next. Nothing flows via conversation history. A session can end, a new agent can pick up the artifacts, and delivery continues — because the handoff is explicit, structured, and schema-validated.
+
+### 14-Phase Delivery Pipeline
+
+```
+ [0] clarify       ──► [1] discover     ──► [2] specify      ──► [3] spec-challenge ◄──┐
+     clarifier           researcher           specifier            reviewer  ■ GATE     │
+                                                                      │                 │
+                                                                      ▼ approved        │ rejected
+ [6] design-review ◄── [5] design       ◄── [4] author             ─────────────────────┘
+     reviewer  ■ GATE       designer          content-author
+         │
+         ▼ approved
+ [7] plan          ──► [8] plan-review   ──► [9] execute     ──► [10] verify
+     planner            reviewer  ■ GATE       executor            verifier
+                                                                      │
+                                                                      ▼
+                        [13] prepare-next◄── [12] learn      ◄── [11] review
+                             learner          learner              reviewer
+
+ ■ GATE = Approval gate: phase blocks until reviewer explicitly approves.
+          Rejection loops back to the authoring phase.
+```
+
+### Composition Engine
+
+The composition engine loads the right expertise per role per task. A 4-layer system (always, auto, stacks, concerns) assembles which of 255 expertise modules load into each role's context. The executor gets modules on how to build. The verifier gets modules on what to detect. The reviewer gets modules on what to flag -- all resolved automatically from the task's declared stack and concerns. Max 15 modules per dispatch, token budget enforced.
+
+```mermaid
+graph TD
+    A["Task Spec<br/>(from Clarifier)"] --> B{"Composition<br/>Engine"}
+
+    B --> C["Layer 1: Always<br/>Role-intrinsic modules"]
+    B --> D["Layer 2: Auto<br/>Cross-stack modules"]
+    B --> E["Layer 3: Stacks<br/>Detected stack modules"]
+    B --> F["Layer 4: Concerns<br/>Declared concern modules"]
+
+    C --> G["Role-scoped<br/>module set"]
+    D --> G
+    E --> G
+    F --> G
+
+    G --> H{"Token Budget<br/>Enforcer"}
+    H --> |"max 15 modules"| I["Composed<br/>Agent Prompt"]
+
+    style B fill:#f9f,stroke:#333
+    style H fill:#ff9,stroke:#333
+    style I fill:#9f9,stroke:#333
+    style G fill:#9cf,stroke:#333
+```
+
+See [assets/composition-engine.mmd](assets/composition-engine.mmd) for the full diagram with role-specific loading rules.
+
+---
+
+## What's Included
+
+**Stop ambiguity from becoming bugs.** The clarifier and specifier roles turn vague requirements into measurable specs with acceptance criteria. The spec-challenge phase adversarially reviews every spec before planning begins. Ten canonical role contracts define exactly what each agent can access, produce, and escalate. [Roles reference](docs/reference/roles-reference.md)
+
+**Stop context from flooding the window.** 255 curated expertise modules across 11 domains — architecture, security, design, antipatterns, performance, i18n, and more — loaded selectively per role per phase via a 4-layer composition engine. Max 15 modules per dispatch with token budget enforcement. [Expertise reference](docs/reference/expertise-index.md)
+
+**Stop quality from varying randomly.** Adversarial review runs at three chokepoints (spec-challenge, plan-review, final review) by the reviewer role, never the phase author. Nine hard approval gates across a 14-phase pipeline ensure nothing advances on vibes. [Architecture overview](docs/concepts/architecture.md)
+
+**Stop good solutions from being forgotten.** A disciplined learning system promotes scoped knowledge across runs. Proposed learnings require explicit review and scope tagging before promotion. Only learnings whose file patterns overlap the current task are injected into context.
+
+**Stop structural failures before they happen.** Seven hook contracts enforce protected path writes (exit 42), loop caps (exit 43), and session observability. Eleven callable skills — sa:tdd, sa:verification, sa:debugging — enforce exact procedures with evidence at each step. [Skills reference](docs/reference/skills.md) | [Hooks reference](docs/reference/hooks.md)
+
+**Stop hardcoded strings and missing copy.** The content-author role runs before design, producing finalized i18n keys, microcopy, glossary entries, state coverage, and accessibility copy. No "we'll add the copy later."
+
+**Run anywhere — Claude, Codex, Gemini, or Cursor.** `superagent export build` compiles canonical sources into native packages for all four hosts. SHA-256 drift detection catches stale exports in CI. [Host exports reference](docs/reference/host-exports.md)
+
+---
+
+## Documentation
+
+| I want to... | Go to |
+|---|---|
+| Install and get started | [Getting Started](docs/getting-started/01-installation.md) |
+| Understand the architecture | [Architecture](docs/concepts/architecture.md) |
+| Look up CLI commands | [CLI Reference](docs/reference/tooling-cli.md) |
+| Learn about roles and workflows | [Roles & Workflows](docs/concepts/roles-and-workflows.md) |
+| Configure the manifest | [Configuration Reference](docs/reference/configuration-reference.md) |
+| Browse expertise modules | [Expertise Index](docs/reference/expertise-index.md) |
+| Set up host exports | [Host Exports](docs/reference/host-exports.md) |
+| Browse all documentation | [Documentation Hub](docs/README.md) |
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, branch conventions, commit format, and contribution guidelines.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+---
+## Source: CONTRIBUTING.md
+
+# Contributing
+
+SuperAgent is a host-native engineering OS kit. Contributions that strengthen the product surface are welcome.
+
+## Ground rules
+
+- follow the architecture in `docs/concepts/architecture.md`
+- keep the product host-native — roles, workflows, skills, hooks, and host exports
+- prefer evidence:
+  - TDD for behavior changes
+  - verification commands before completion claims
+  - no fake green paths
+
+## Local setup
+
+1. Clone the repository and install dependencies:
+   ```bash
+   git clone https://github.com/MohamedAbdallah-14/super-agent.git
+   cd super-agent
+   npm install
+   ```
+   You should see output ending with something like:
+   ```
+   added XX packages in Xs
+   ```
+2. Run the test suite:
+   ```bash
+   npm test
+   ```
+   Expected output:
+   ```
+   TAP version 13
+   # ... test descriptions ...
+   ok
+   ```
+   All tests must pass before you submit a PR.
+3. Regenerate host packages when export logic or canonical sources change:
+   ```bash
+   superagent export build
+   ```
+4. Check export drift:
+   ```bash
+   superagent export --check
+   ```
+5. Validate the project structure:
+   ```bash
+   superagent validate
+   ```
+
+## Testing expectations
+
+- **What to test:** Every behavior change, new CLI command, hook behavior, or schema change must have accompanying tests.
+- **How to run tests:**
+  ```bash
+  npm test              # run the full suite
+  ```
+- **Coverage:** Tests live alongside the code they verify. If you add a new module in `tooling/src/`, add a corresponding test in `tooling/test/`. If you add a new skill in `skills/`, include a test script or verification step in the skill directory.
+- **TDD is mandatory:** Write the failing test first, then implement the feature or fix.
+
+## Your first contribution
+
+New to SuperAgent? Start here:
+
+1. Browse issues labeled [`good first issue`](https://github.com/MohamedAbdallah-14/super-agent/labels/good%20first%20issue)
+2. Fork the repository and create a branch: `git checkout -b feat/your-change`
+3. Make your change, add tests, run `npm test`
+4. Open a pull request using the PR template
+
+### Good first issues
+
+Good first issues are small, well-scoped tasks that help you learn the codebase. They typically involve:
+
+- Fixing a typo or improving clarity in documentation
+- Adding a missing validation or error message to the CLI
+- Writing tests for an existing module that lacks coverage
+- Updating a role contract or workflow description to match current behavior
+
+Look for the `good first issue` label, and feel free to comment on the issue to claim it before starting work.
+
+Not sure where to start? Open a [Discussion](https://github.com/MohamedAbdallah-14/super-agent/discussions) and we'll help you find something.
+
+## Change expectations
+
+- keep docs current with the actual behavior you changed
+- update `CHANGELOG.md`
+- add or update tests for new CLI behavior, hook behavior, or schemas
+- avoid adding dependencies unless they materially reduce correctness risk
+
+## Pull requests
+
+- explain the problem, the change, and the verification you ran
+- call out any remaining gaps or follow-up work explicitly
+- if a review tool was unavailable, say so rather than implying review happened
+
+## PR review process
+
+1. **Automated checks:** When you open a PR, CI runs `npm test` and `superagent validate`. Both must pass before review begins.
+2. **Human review:** A maintainer will review your PR for correctness, test coverage, documentation, and alignment with the architecture.
+3. **Feedback:** If changes are requested, push additional commits to the same branch. Avoid force-pushing during review so that reviewers can see incremental changes.
+4. **Merge:** Once approved and all checks pass, a maintainer will merge your PR using a squash merge with a conventional commit message.
+5. **Timeline:** We aim to provide initial review feedback within a few days. If your PR has been open for more than a week without a response, feel free to leave a comment or ping in Discussions.
+
+---
+## Source: AGENTS.md
+
+# SuperAgent Agent Instructions
+
+## Role-Based Workflow System
+
+SuperAgent uses canonical roles and phased workflows. Role contracts are in `roles/`. Workflow definitions are in `workflows/`.
+
+### Canonical Roles
+
+1. **clarifier** — disambiguate intent, extract acceptance criteria
+2. **researcher** — gather evidence, prior art, domain context
+3. **specifier** — write precise specs from clarified requirements
+4. **designer** — produce architecture and interface designs
+5. **content-author** — create documentation, guides, and prose artifacts
+6. **planner** — break specs into ordered, testable tasks
+7. **executor** — implement code following the plan
+8. **verifier** — run tests, linting, and validation gates
+9. **reviewer** — final quality review against acceptance criteria
+10. **learner** — capture lessons learned and update knowledge base
+
+See `roles/` for full contracts. See `superagent.manifest.yaml` for the authoritative list.
+
+### Entering a Workflow
+
+1. **Clarifier:** read and follow `~/.claude/agents/clarifier.md` — tasks are in `input/`
+2. **Subsequent phases:** the workflow system assigns roles per phase. See `workflows/` for phase sequence.
+3. **Review:** read and follow `~/.claude/agents/reviewer.md` — run all review phases
+
+## Build Commands
+
+| Command | Purpose |
+|---------|---------|
+| `npm install` | Install dependencies |
+| `npm test` | Run full test suite (node:test) |
+| `superagent validate` | Validate manifest, hooks, docs, brand, exports, commits |
+| `superagent doctor` | Check environment health |
+| `superagent export build` | Build host-native packages |
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Success |
+| 1 | General error |
+| 2 | Usage / argument error |
+| 42 | Validation failure (non-fatal) |
+| 43 | Gate rejection (hard stop) |
+
+## Code Style
+
+- Pure JavaScript — no TypeScript, no JSX, no transpilation
+- Node.js >= 20
+- ES modules (`import` / `export`)
+- Test framework: `node:test` + `node:assert`
+- Zero runtime dependencies in the core kit
+
+### Test Pattern
+
+```js
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+
+describe('featureName', () => {
+  it('should behave correctly', () => {
+    const result = featureName();
+    assert.strictEqual(result, expected);
+  });
+});
+```
+
+## Project Structure
+
+| Directory | Purpose |
+|-----------|---------|
+| `roles/` | Canonical role contracts (one file per role) |
+| `workflows/` | Phase-based workflow definitions and entry points |
+| `expertise/` | Domain knowledge modules consumed by roles |
+| `skills/` | Reusable skill definitions (prefixed `sa:`) |
+| `hooks/` | Lifecycle hooks (pre-commit, pre-push, gates) |
+| `tooling/` | CLI source, tests, and internal utilities |
+| `exports/` | Generated host-native packages (do not edit) |
+| `templates/` | Scaffold and boilerplate templates |
+| `schemas/` | JSON / YAML schemas for validation |
+| `docs/` | Architecture docs, guides, and references |
+
+## Git Workflow
+
+- **Conventional commits:** `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
+- **Isolated feature branches** — never commit directly to `main`
+- **TDD cycle:** failing test -> implement -> verify -> commit
+
+## Boundaries
+
+- Never edit files in `exports/` directly — they are generated from canonical sources
+- Never modify pipeline input files — they are read-only task input
+- Never skip `superagent doctor` before starting work
+- Never add runtime dependencies to the core kit
+- Never use TypeScript, JSX, or any transpilation step
+- Never commit without running `npm test` first
+- Never bypass validation gates (`superagent validate`)
+
+## Operating Constraints
+
+- Use `roles/` as the source of truth for role contracts
+- Keep default live run state outside the repo under `~/.superagent/projects/<project-slug>/`
+- Preserve evidence-first execution, TDD, verification, and conventional commits
+- Use isolated feature branches
+- Reference `superagent.manifest.yaml` for the project manifest and schema
+

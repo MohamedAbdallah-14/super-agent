@@ -1,0 +1,41 @@
+name: Documentation Issue
+description: Report incorrect, missing, or confusing documentation
+title: "[Docs]: "
+labels:
+  - documentation
+body:
+  - type: input
+    id: docs-page
+    attributes:
+      label: Documentation page
+      description: Which docs page or file is affected?
+      placeholder: "docs/architecture.md"
+    validations:
+      required: true
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue type
+      description: What kind of documentation issue is this?
+      options:
+        - Incorrect
+        - Missing
+        - Confusing
+        - Outdated
+        - Typo
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the documentation issue in detail.
+    validations:
+      required: true
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: Suggested fix
+      description: If you have a suggestion for how to fix the documentation, describe it here.
+    validations:
+      required: false

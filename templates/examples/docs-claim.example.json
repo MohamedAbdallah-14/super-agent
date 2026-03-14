@@ -1,0 +1,8 @@
+{
+  "id": "install-codex-cli",
+  "file": "docs/install.md",
+  "claim_type": "command",
+  "subject": "superagent export --host codex",
+  "verifier": "superagent export --help",
+  "required": true
+}

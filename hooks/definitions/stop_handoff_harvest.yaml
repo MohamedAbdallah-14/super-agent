@@ -1,0 +1,20 @@
+id: stop_handoff_harvest
+trigger: stop_handoff_harvest
+description: Harvest final handoff notes and persist stop-time observability data.
+input_contract:
+  required:
+    - run_id
+allowed_side_effects:
+  - append_event
+  - write_handoff
+output_contract:
+  produces:
+    - summary.md
+failure_behavior:
+  mode: capture
+  exit_code: 0
+host_fallback:
+  claude: native_hook
+  codex: wrapper_command
+  gemini: wrapper_command
+  cursor: native_or_wrapper

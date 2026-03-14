@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 60" role="img" aria-label="SuperAgent">
+  <title>SuperAgent</title>
+  <style>
+    text {
+      font-family: 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+  </style>
+  <text x="10" y="44" fill="#1E1E2E">Super</text>
+  <text x="155" y="44" fill="#6366F1">Agent</text>
+</svg>

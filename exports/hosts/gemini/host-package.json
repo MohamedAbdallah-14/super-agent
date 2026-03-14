@@ -1,0 +1,40 @@
+{
+  "host": "gemini",
+  "sources": [
+    "superagent.manifest.yaml",
+    "roles/clarifier.md",
+    "roles/content-author.md",
+    "roles/designer.md",
+    "roles/executor.md",
+    "roles/learner.md",
+    "roles/planner.md",
+    "roles/researcher.md",
+    "roles/reviewer.md",
+    "roles/specifier.md",
+    "roles/verifier.md",
+    "workflows/author.md",
+    "workflows/clarify.md",
+    "workflows/design-review.md",
+    "workflows/design.md",
+    "workflows/discover.md",
+    "workflows/execute.md",
+    "workflows/learn.md",
+    "workflows/plan-review.md",
+    "workflows/plan.md",
+    "workflows/prepare-next.md",
+    "workflows/review.md",
+    "workflows/spec-challenge.md",
+    "workflows/specify.md",
+    "workflows/verify.md",
+    "hooks/definitions/loop_cap_guard.yaml",
+    "hooks/definitions/post_tool_capture.yaml",
+    "hooks/definitions/pre_compact_summary.yaml",
+    "hooks/definitions/pre_tool_capture_route.yaml",
+    "hooks/definitions/protected_path_write_guard.yaml",
+    "hooks/definitions/session_start.yaml",
+    "hooks/definitions/stop_handoff_harvest.yaml"
+  ],
+  "files": [
+    "GEMINI.md"
+  ]
+}

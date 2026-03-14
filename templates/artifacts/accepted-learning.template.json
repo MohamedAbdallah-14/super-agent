@@ -1,0 +1,12 @@
+{
+  "run_id": "<run-id>",
+  "phase": "learn",
+  "role": "learner",
+  "loop": 1,
+  "status": "accepted",
+  "sources": [
+    "<proposed-learning>"
+  ],
+  "scope_tags": [],
+  "adoption_guidance": "<guidance>"
+}

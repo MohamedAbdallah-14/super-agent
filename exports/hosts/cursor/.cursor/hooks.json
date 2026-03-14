@@ -1,0 +1,16 @@
+{
+  "hooks": [
+    {
+      "name": "protected-path-write-guard",
+      "command": "./hooks/protected-path-write-guard"
+    },
+    {
+      "name": "loop-cap-guard",
+      "command": "./hooks/loop-cap-guard"
+    },
+    {
+      "name": "session-start",
+      "command": "./hooks/session-start"
+    }
+  ]
+}

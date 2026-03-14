@@ -1,0 +1,15 @@
+{
+  "$schema": "https://registry.modelcontextprotocol.io/schema/server.json",
+  "name": "superagent",
+  "description": "Host-native engineering OS kit for AI coding agents — 10 canonical roles, 14-phase delivery pipeline, 309 expertise modules with quality gates for Claude, Codex, Gemini & Cursor",
+  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/MohamedAbdallah-14/super-agent",
+    "source": "github"
+  },
+  "packages": {
+    "npm": {
+      "name": "@superagent-os/cli"
+    }
+  }
+}

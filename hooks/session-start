@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const hooksDir = dirname(fileURLToPath(import.meta.url));
+const projectRoot = dirname(hooksDir);
+const skillFile = join(projectRoot, 'skills', 'using-skills', 'SKILL.md');
+
+if (existsSync(skillFile)) {
+  const content = readFileSync(skillFile, 'utf-8');
+  process.stdout.write(
+    `<EXTREMELY_IMPORTANT>\n` +
+    `You have skills.\n\n` +
+    `**Below is the full content of your 'sa:using-skills' skill:**\n\n` +
+    `${content}\n` +
+    `</EXTREMELY_IMPORTANT>\n`,
+  );
+  process.exit(0);
+}
+
+process.stdout.write(
+  `<system-reminder>\n` +
+  `WARNING: sa:using-skills skill not found at ${skillFile}\n` +
+  `The SuperAgent skill bootstrap is not available. Skills will not be auto-discovered.\n` +
+  `Run: check that skills/using-skills/SKILL.md exists.\n` +
+  `</system-reminder>\n`,
+);
+process.exit(0);

@@ -1,0 +1,8 @@
+{
+  "run_id": "<run-id>",
+  "project_slug": "<project-slug>",
+  "state_root": ".superagent-state/",
+  "phase": "clarify",
+  "status": "running",
+  "started_at": "<iso8601>"
+}

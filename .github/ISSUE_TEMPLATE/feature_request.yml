@@ -1,0 +1,44 @@
+name: Feature Request
+description: Propose an improvement to the active SuperAgent surface
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Problem statement
+      description: What problem are you trying to solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: Describe the desired behavior or change.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives-considered
+    attributes:
+      label: Alternatives considered
+      description: What other approaches did you consider and why were they ruled out?
+    validations:
+      required: false
+  - type: dropdown
+    id: affected-component
+    attributes:
+      label: Affected component
+      description: Which part of SuperAgent does this relate to?
+      options:
+        - Roles
+        - Workflows
+        - Skills
+        - Hooks
+        - Expertise System
+        - CLI
+        - Host Exports
+        - Documentation
+        - Other
+    validations:
+      required: true

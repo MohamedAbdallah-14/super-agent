@@ -1,0 +1,34 @@
+graph TD
+    A["Task Spec<br/>(from Clarifier)"] --> B{"Composition<br/>Engine"}
+
+    B --> C["Layer 1: Always<br/>Role-intrinsic modules"]
+    B --> D["Layer 2: Auto<br/>Cross-stack modules"]
+    B --> E["Layer 3: Stacks<br/>Detected stack modules"]
+    B --> F["Layer 4: Concerns<br/>Declared concern modules"]
+
+    C --> |"e.g. antipatterns/process,<br/>error-handling, naming"| G["Role-scoped<br/>module set"]
+    D --> |"e.g. security/vulnerability,<br/>secrets, performance,<br/>technical-debt"| G
+    E --> |"e.g. flutter.md,<br/>react.md, node.md"| G
+    F --> |"e.g. rtl, i18n,<br/>accessibility, security-auth"| G
+
+    G --> H{"Token Budget<br/>Enforcer"}
+    H --> |"max 15 modules"| I["Composed<br/>Agent Prompt"]
+
+    subgraph "Role-specific loading rules"
+        J["executor: HOW to build<br/>+ antipatterns"]
+        K["designer: HOW to design<br/>+ design antipatterns"]
+        L["verifier: WHAT to detect<br/>(antipatterns + testing)"]
+        M["reviewer: WHAT to flag<br/>(antipatterns + architecture)"]
+        N["content-author: content<br/>foundations + i18n + editorial"]
+    end
+
+    B -.-> J
+    B -.-> K
+    B -.-> L
+    B -.-> M
+    B -.-> N
+
+    style B fill:#f9f,stroke:#333
+    style H fill:#ff9,stroke:#333
+    style I fill:#9f9,stroke:#333
+    style G fill:#9cf,stroke:#333

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superagent.dev/schemas/docs-claim.schema.json",
+  "title": "Docs Truth Claim",
+  "type": "object",
+  "required": ["id", "file", "claim_type", "subject", "verifier"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "file": { "type": "string", "minLength": 1 },
+    "claim_type": {
+      "enum": ["command", "path", "host_quickstart", "generated_file", "example"]
+    },
+    "subject": { "type": "string", "minLength": 1 },
+    "verifier": { "type": "string", "minLength": 1 },
+    "required": { "type": "boolean" }
+  },
+  "additionalProperties": false
+}

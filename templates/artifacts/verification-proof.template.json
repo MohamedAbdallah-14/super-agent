@@ -1,0 +1,11 @@
+{
+  "run_id": "<run-id>",
+  "phase": "verify",
+  "role": "verifier",
+  "loop": 1,
+  "status": "draft",
+  "sources": [
+    "<execution-notes>"
+  ],
+  "checks": []
+}

@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superagent.dev/schemas/author-artifact.schema.json",
+  "title": "Author Artifact",
+  "description": "Metadata for an author artifact produced by the author role.",
+  "type": "object",
+  "required": [
+    "phase",
+    "role",
+    "run_id",
+    "created_at",
+    "sources",
+    "status",
+    "loop_number",
+    "microcopy",
+    "i18n_keys",
+    "seed_data",
+    "terminology",
+    "asset_metadata",
+    "state_coverage",
+    "notifications",
+    "editorial_constraints",
+    "coverage_matrix"
+  ],
+  "properties": {
+    "phase": { "const": "author" },
+    "role": { "const": "author" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "sources": { "type": "array", "items": { "type": "string" } },
+    "status": { "type": "string", "minLength": 1 },
+    "loop_number": { "type": "integer", "minimum": 0 },
+    "microcopy": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "text"],
+        "properties": {
+          "key": { "type": "string", "minLength": 1 },
+          "text": { "type": "string", "minLength": 1 },
+          "context": { "type": "string" },
+          "max_length": { "type": "integer", "minimum": 1 }
+        },
+        "additionalProperties": true
+      },
+      "description": "UI microcopy entries keyed for developer lookup."
+    },
+    "i18n_keys": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "en"],
+        "properties": {
+          "key": { "type": "string", "minLength": 1 },
+          "en": { "type": "string", "minLength": 1 },
+          "description": { "type": "string" }
+        },
+        "additionalProperties": true
+      },
+      "description": "Internationalization key-value pairs with English defaults."
+    },
+    "seed_data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entity", "records"],
+        "properties": {
+          "entity": { "type": "string", "minLength": 1 },
+          "records": { "type": "array", "items": { "type": "object" } }
+        },
+        "additionalProperties": true
+      },
+      "description": "Default seed data for the feature."
+    },
+    "terminology": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["term", "definition"],
+        "properties": {
+          "term": { "type": "string", "minLength": 1 },
+          "definition": { "type": "string", "minLength": 1 },
+          "avoid": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": true
+      },
+      "description": "Glossary of terms with preferred usage and alternatives to avoid."
+    },
+    "asset_metadata": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["asset", "alt_text"],
+        "properties": {
+          "asset": { "type": "string", "minLength": 1 },
+          "alt_text": { "type": "string", "minLength": 1 },
+          "purpose": { "type": "string" }
+        },
+        "additionalProperties": true
+      },
+      "description": "Metadata for visual or media assets including alt text."
+    },
+    "state_coverage": {
+      "type": "object",
+      "properties": {
+        "empty": { "type": "string" },
+        "loading": { "type": "string" },
+        "error": { "type": "string" },
+        "success": { "type": "string" },
+        "partial": { "type": "string" }
+      },
+      "additionalProperties": true,
+      "description": "Copy for each UI state (empty, loading, error, success, partial)."
+    },
+    "notifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["trigger", "message"],
+        "properties": {
+          "trigger": { "type": "string", "minLength": 1 },
+          "message": { "type": "string", "minLength": 1 },
+          "channel": { "type": "string" }
+        },
+        "additionalProperties": true
+      },
+      "description": "Notification copy keyed by trigger event."
+    },
+    "editorial_constraints": {
+      "type": "object",
+      "properties": {
+        "tone": { "type": "string" },
+        "voice": { "type": "string" },
+        "reading_level": { "type": "string" },
+        "banned_words": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true,
+      "description": "Editorial guidelines for all copy in this feature."
+    },
+    "coverage_matrix": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["screen", "states_covered"],
+        "properties": {
+          "screen": { "type": "string", "minLength": 1 },
+          "states_covered": { "type": "array", "items": { "type": "string" } },
+          "notes": { "type": "string" }
+        },
+        "additionalProperties": true
+      },
+      "description": "Matrix mapping screens to their covered content states."
+    }
+  },
+  "additionalProperties": true
+}

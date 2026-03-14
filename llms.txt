@@ -1,0 +1,43 @@
+# SuperAgent
+
+> The operating model for AI coding agents — roles, phases, expertise modules, quality gates for Claude, Codex, Gemini & Cursor.
+
+<!-- Note: These are relative file paths. View on GitHub at https://github.com/superagent-ai/superagent -->
+
+## Getting Started
+
+- [Installation](docs/getting-started/01-installation.md)
+- [First Run Tutorial](docs/getting-started/02-first-run.md)
+
+## Concepts
+
+- [Architecture](docs/concepts/architecture.md)
+- [Roles & Workflows](docs/concepts/roles-and-workflows.md)
+- [Composition Engine](docs/concepts/composition-engine.md)
+- [Artifact Model](docs/concepts/artifact-model.md)
+- [Observability](docs/concepts/observability.md)
+- [Indexing & Recall](docs/concepts/indexing-and-recall.md)
+- [Terminology Policy](docs/concepts/terminology-policy.md)
+
+## Guides
+
+- [Troubleshooting](docs/guides/troubleshooting.md)
+- [Memory & Learnings](docs/guides/memory-and-learnings.md)
+
+## Reference
+
+- [CLI Reference](docs/reference/tooling-cli.md)
+- [Hook Contracts](docs/reference/hooks.md)
+- [Configuration](docs/reference/configuration-reference.md)
+- [Host Exports](docs/reference/host-exports.md)
+- [Roles Reference](docs/reference/roles-reference.md)
+- [Expertise Index](docs/reference/expertise-index.md)
+- [Skills](docs/reference/skills.md)
+- [Git Flow](docs/reference/git-flow.md)
+- [Release Process](docs/reference/release-process.md)
+- [Templates](docs/reference/templates.md)
+
+## Optional
+
+- [Contributing](CONTRIBUTING.md)
+- [Full Documentation](llms-full.txt): Complete documentation in a single file

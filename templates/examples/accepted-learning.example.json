@@ -1,0 +1,14 @@
+{
+  "phase": "learn",
+  "role": "learner",
+  "run_id": "run-2026-03-11-example",
+  "created_at": "2026-03-11T12:55:00Z",
+  "sources": [
+    "artifacts/run-2026-03-11/review.json"
+  ],
+  "status": "accepted",
+  "loop_number": 1,
+  "scope": "cleanup-execution",
+  "confidence": 0.91,
+  "review_date": "2026-03-11"
+}

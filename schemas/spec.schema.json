@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superagent.dev/schemas/spec.schema.json",
+  "title": "Spec Artifact",
+  "type": "object",
+  "required": ["phase", "role", "run_id", "created_at", "sources", "status", "loop_number", "requirements", "acceptance_criteria", "approval"],
+  "properties": {
+    "phase": { "const": "specify" },
+    "role": { "const": "specifier" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "sources": { "type": "array", "items": { "type": "string" } },
+    "status": { "type": "string", "minLength": 1 },
+    "loop_number": { "type": "integer", "minimum": 0 },
+    "requirements": { "type": "array", "items": { "type": "string" } },
+    "acceptance_criteria": { "type": "array", "items": { "type": "string" } },
+    "approval": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": true
+}

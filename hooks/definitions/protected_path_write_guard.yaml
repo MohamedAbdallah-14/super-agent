@@ -1,0 +1,19 @@
+id: protected_path_write_guard
+trigger: protected_path_write_guard
+description: Block writes to protected canonical paths outside approved regeneration flows.
+input_contract:
+  required:
+    - target_path
+allowed_side_effects:
+  - block_write
+output_contract:
+  produces:
+    - guard_decision
+failure_behavior:
+  mode: block
+  exit_code: 42
+host_fallback:
+  claude: native_or_wrapper
+  codex: wrapper_command
+  gemini: wrapper_command
+  cursor: native_or_wrapper

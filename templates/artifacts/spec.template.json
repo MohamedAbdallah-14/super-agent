@@ -1,0 +1,12 @@
+{
+  "run_id": "<run-id>",
+  "phase": "specify",
+  "role": "specifier",
+  "loop": 1,
+  "status": "draft",
+  "sources": [
+    "<clarification-artifact>"
+  ],
+  "acceptance_criteria": [],
+  "non_goals": []
+}

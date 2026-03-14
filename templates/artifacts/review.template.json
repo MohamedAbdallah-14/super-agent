@@ -1,0 +1,11 @@
+{
+  "run_id": "<run-id>",
+  "phase": "review",
+  "role": "reviewer",
+  "loop": 1,
+  "status": "draft",
+  "sources": [
+    "<verification-proof>"
+  ],
+  "findings": []
+}

@@ -1,0 +1,19 @@
+id: pre_compact_summary
+trigger: pre_compact_summary
+description: Summarize captured output before context compaction or handoff.
+input_contract:
+  required:
+    - run_id
+allowed_side_effects:
+  - write_summary
+output_contract:
+  produces:
+    - summary.md
+failure_behavior:
+  mode: warn
+  exit_code: 0
+host_fallback:
+  claude: native_or_wrapper
+  codex: wrapper_command
+  gemini: wrapper_command
+  cursor: wrapper_command

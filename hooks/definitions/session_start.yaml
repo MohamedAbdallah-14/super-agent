@@ -1,0 +1,21 @@
+id: session_start
+trigger: session_start
+description: Initialize run-local status capture and bootstrap summaries.
+input_contract:
+  required:
+    - project_root
+    - run_id
+allowed_side_effects:
+  - create_status_file
+  - append_event
+output_contract:
+  produces:
+    - status.json
+failure_behavior:
+  mode: capture
+  exit_code: 0
+host_fallback:
+  claude: native_hook
+  codex: wrapper_command
+  gemini: wrapper_command
+  cursor: native_or_wrapper

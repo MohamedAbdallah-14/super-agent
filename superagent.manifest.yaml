@@ -1,0 +1,134 @@
+manifest_version: 2
+project:
+  name: superagent
+  display_name: SuperAgent
+  version: 0.1.0
+  description: Host-native engineering OS kit for disciplined software work inside Claude, Codex, Gemini, and Cursor.
+  license: MIT
+versioning_policy:
+  strategy: semver
+  stability: pre-1.0-alpha
+  compatibility: additive_changes_only_until_manifest_bump
+paths:
+  input: input
+  roles: roles
+  workflows: workflows
+  skills: skills
+  agents: agents
+  hooks: hooks
+  templates: templates
+  schemas: schemas
+  expertise: expertise
+  docs: docs
+  exports: exports
+  tooling: tooling
+  examples: examples
+  memory: memory
+  state_root_default: ~/.superagent/projects/{project_slug}
+hosts:
+  - claude
+  - codex
+  - gemini
+  - cursor
+workflows:
+  - clarify
+  - discover
+  - specify
+  - spec_challenge
+  - author
+  - design
+  - design_review
+  - plan
+  - plan_review
+  - execute
+  - verify
+  - review
+  - learn
+  - prepare_next
+phases:
+  - clarify
+  - discover
+  - specify
+  - spec_challenge
+  - author
+  - design
+  - design_review
+  - plan
+  - plan_review
+  - execute
+  - verify
+  - review
+  - learn
+  - prepare_next
+roles:
+  - clarifier
+  - researcher
+  - specifier
+  - content-author
+  - designer
+  - planner
+  - executor
+  - verifier
+  - reviewer
+  - learner
+export_targets:
+  - claude
+  - codex
+  - gemini
+  - cursor
+required_hooks:
+  - session_start
+  - pre_tool_capture_route
+  - post_tool_capture
+  - pre_compact_summary
+  - stop_handoff_harvest
+  - protected_path_write_guard
+  - loop_cap_guard
+protected_paths:
+  - input
+  - roles
+  - workflows
+  - schemas
+  - exports/hosts
+prohibited_terms:
+  - Agent OS
+  - daemon
+  - HTTP control plane
+  - web UI
+  - OpenAI Symphony
+  - Elixir
+adapters:
+  context_mode:
+    enabled_by_default: false
+    required: false
+    install_mode: external
+    package_presence: optional
+  open_pencil:
+    enabled_by_default: false
+    required: false
+    install_mode: external
+    package_presence: optional
+index:
+  core_parsers:
+    - builtin-heuristic-javascript
+    - builtin-heuristic-typescript
+    - builtin-heuristic-python
+    - builtin-heuristic-go
+    - builtin-heuristic-rust
+    - builtin-heuristic-java
+    - builtin-heuristic-sql
+    - builtin-heuristic-json
+    - builtin-heuristic-yaml
+    - builtin-heuristic-markdown
+  optional_language_plugins: []
+validation_checks:
+  - docs-truth
+  - brand-truth
+  - export-drift
+  - artifact-schema
+  - review-loop
+  - verification-proof
+  - docs-required
+  - protected-paths
+  - state-hygiene
+  - runtime-surface

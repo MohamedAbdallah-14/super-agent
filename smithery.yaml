@@ -1,0 +1,11 @@
+name: superagent
+description: Host-native engineering OS kit for AI coding agents
+version: 0.1.0
+repository: https://github.com/MohamedAbdallah-14/super-agent
+license: MIT
+tags:
+  - ai-agents
+  - workflow-automation
+  - developer-tools
+  - code-review
+  - tdd

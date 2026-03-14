@@ -1,0 +1,39 @@
+graph LR
+    P0["[0] clarify<br/><i>clarifier</i>"]
+    P1["[1] discover<br/><i>researcher</i>"]
+    P2["[2] specify<br/><i>specifier</i>"]
+    P3{{"[3] spec-challenge<br/><i>reviewer</i><br/>APPROVAL GATE"}}
+    P4["[4] author<br/><i>content-author</i>"]
+    P5["[5] design<br/><i>designer</i>"]
+    P6{{"[6] design-review<br/><i>reviewer</i><br/>APPROVAL GATE"}}
+    P7["[7] plan<br/><i>planner</i>"]
+    P8{{"[8] plan-review<br/><i>reviewer</i><br/>APPROVAL GATE"}}
+    P9["[9] execute<br/><i>executor</i>"]
+    P10["[10] verify<br/><i>verifier</i>"]
+    P11["[11] review<br/><i>reviewer</i>"]
+    P12["[12] learn<br/><i>learner</i>"]
+    P13["[13] prepare-next<br/><i>learner</i>"]
+
+    P0 --> P1 --> P2 --> P3
+    P3 -->|approved| P4 --> P5 --> P6
+    P6 -->|approved| P7 --> P8
+    P8 -->|approved| P9 --> P10 --> P11 --> P12 --> P13
+
+    P3 -.->|rejected| P2
+    P6 -.->|rejected| P5
+    P8 -.->|rejected| P7
+
+    style P3 fill:#f96,stroke:#333,color:#000
+    style P6 fill:#f96,stroke:#333,color:#000
+    style P8 fill:#f96,stroke:#333,color:#000
+    style P0 fill:#e8f4fd,stroke:#333
+    style P1 fill:#e8f4fd,stroke:#333
+    style P2 fill:#e8f4fd,stroke:#333
+    style P4 fill:#d4edda,stroke:#333
+    style P5 fill:#d4edda,stroke:#333
+    style P7 fill:#fff3cd,stroke:#333
+    style P9 fill:#cce5ff,stroke:#333
+    style P10 fill:#f8d7da,stroke:#333
+    style P11 fill:#f8d7da,stroke:#333
+    style P12 fill:#e2e3e5,stroke:#333
+    style P13 fill:#e2e3e5,stroke:#333

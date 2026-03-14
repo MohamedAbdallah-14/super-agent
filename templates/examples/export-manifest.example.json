@@ -1,0 +1,7 @@
+{
+  "host": "claude",
+  "source_hashes": {
+    "superagent.manifest.yaml": "abc123",
+    "roles/clarifier.md": "def456"
+  }
+}

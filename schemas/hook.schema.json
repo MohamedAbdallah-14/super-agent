@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superagent.dev/schemas/hook.schema.json",
+  "title": "SuperAgent Hook Definition",
+  "type": "object",
+  "required": [
+    "id",
+    "trigger",
+    "description",
+    "input_contract",
+    "allowed_side_effects",
+    "output_contract",
+    "failure_behavior",
+    "host_fallback"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "trigger": {
+      "enum": [
+        "session_start",
+        "pre_tool_capture_route",
+        "post_tool_capture",
+        "pre_compact_summary",
+        "stop_handoff_harvest",
+        "protected_path_write_guard",
+        "loop_cap_guard"
+      ]
+    },
+    "description": { "type": "string", "minLength": 1 },
+    "input_contract": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "allowed_side_effects": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "output_contract": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "failure_behavior": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": {
+          "enum": ["block", "warn", "capture"]
+        },
+        "exit_code": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": true
+    },
+    "host_fallback": {
+      "type": "object",
+      "properties": {
+        "claude": { "type": "string" },
+        "codex": { "type": "string" },
+        "gemini": { "type": "string" },
+        "cursor": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

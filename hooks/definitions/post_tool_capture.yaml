@@ -1,0 +1,24 @@
+id: post_tool_capture
+trigger: post_tool_capture
+description: Capture command output, append events, update status, and record usage after tool execution.
+input_contract:
+  required:
+    - command
+    - exit_code
+allowed_side_effects:
+  - write_capture_file
+  - append_event
+  - update_status
+  - update_usage
+output_contract:
+  produces:
+    - events.ndjson
+    - usage.json
+failure_behavior:
+  mode: capture
+  exit_code: 0
+host_fallback:
+  claude: native_hook
+  codex: wrapper_command
+  gemini: wrapper_command
+  cursor: native_or_wrapper

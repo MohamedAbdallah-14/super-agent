@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superagent.dev/schemas/usage.schema.json",
+  "title": "Usage Report",
+  "description": "Per-run token usage tracking and context savings data.",
+  "type": "object",
+  "required": ["schema_version", "run_id", "created_at", "updated_at", "phases", "roles", "savings", "totals"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "phases": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "started_at": { "type": "string", "format": "date-time" },
+          "completed_at": { "type": ["string", "null"], "format": "date-time" },
+          "events_count": { "type": "integer", "minimum": 0 },
+          "capture_bytes_raw": { "type": "integer", "minimum": 0 },
+          "capture_bytes_summary": { "type": "integer", "minimum": 0 },
+          "estimated_tokens_if_raw": { "type": "integer", "minimum": 0 },
+          "estimated_tokens_avoided": { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "roles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "events_count": { "type": "integer", "minimum": 0 },
+          "capture_bytes_raw": { "type": "integer", "minimum": 0 },
+          "estimated_tokens_if_raw": { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "savings": {
+      "type": "object",
+      "properties": {
+        "capture_routing": {
+          "type": "object",
+          "properties": {
+            "raw_bytes": { "type": "integer", "minimum": 0 },
+            "summary_bytes": { "type": "integer", "minimum": 0 },
+            "estimated_tokens_avoided": { "type": "integer", "minimum": 0 },
+            "strategy": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "context_mode": {
+          "type": "object",
+          "properties": {
+            "available": { "type": "boolean" },
+            "raw_kb": { "type": "number", "minimum": 0 },
+            "context_kb": { "type": "number", "minimum": 0 },
+            "savings_ratio": { "type": "string" },
+            "per_tool": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "call_count": { "type": "integer", "minimum": 0 },
+                  "raw_kb": { "type": "number", "minimum": 0 },
+                  "context_kb": { "type": "number", "minimum": 0 }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "compaction": {
+          "type": "object",
+          "properties": {
+            "compaction_count": { "type": "integer", "minimum": 0 },
+            "pre_compaction_tokens_est": { "type": "integer", "minimum": 0 },
+            "post_compaction_tokens_est": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "totals": {
+      "type": "object",
+      "properties": {
+        "total_events": { "type": "integer", "minimum": 0 },
+        "total_capture_bytes_raw": { "type": "integer", "minimum": 0 },
+        "total_capture_bytes_summary": { "type": "integer", "minimum": 0 },
+        "total_estimated_tokens_if_raw": { "type": "integer", "minimum": 0 },
+        "total_estimated_tokens_avoided": { "type": "integer", "minimum": 0 },
+        "savings_percentage": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

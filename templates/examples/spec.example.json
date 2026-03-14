@@ -1,0 +1,21 @@
+{
+  "phase": "specify",
+  "role": "specifier",
+  "run_id": "run-2026-03-11-example",
+  "created_at": "2026-03-11T12:20:00Z",
+  "sources": [
+    "input/brief.md",
+    "artifacts/run-2026-03-11/clarification.json"
+  ],
+  "status": "approved",
+  "loop_number": 1,
+  "requirements": [
+    "Keep SuperAgent host-native with no long-running processes or control plane.",
+    "Use one canonical source of truth with generated host exports."
+  ],
+  "acceptance_criteria": [
+    "Canonical docs, roles, workflows, and exports stay consistent across supported hosts.",
+    "Inactive runtime surfaces are not described as active product behavior."
+  ],
+  "approval": "approved-by-operator"
+}

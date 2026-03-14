@@ -1,0 +1,17 @@
+{
+  "phase": "plan",
+  "role": "planner",
+  "run_id": "run-2026-03-11-example",
+  "created_at": "2026-03-11T12:30:00Z",
+  "sources": [
+    "artifacts/run-2026-03-11/spec.json"
+  ],
+  "status": "approved",
+  "loop_number": 1,
+  "sections": [
+    "Execution controls",
+    "Canonical skeleton",
+    "Manifest and schemas"
+  ],
+  "approval": "approved-by-operator"
+}

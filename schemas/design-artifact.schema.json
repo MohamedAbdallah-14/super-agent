@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superagent.dev/schemas/design-artifact.schema.json",
+  "title": "Design Artifact",
+  "description": "Metadata for a design artifact produced by the designer role.",
+  "type": "object",
+  "required": [
+    "phase",
+    "role",
+    "run_id",
+    "created_at",
+    "sources",
+    "status",
+    "loop_number",
+    "design_file",
+    "exported_code",
+    "design_tokens",
+    "screenshots",
+    "spec_reference"
+  ],
+  "properties": {
+    "phase": { "const": "design" },
+    "role": { "const": "designer" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "sources": { "type": "array", "items": { "type": "string" } },
+    "status": { "type": "string", "minLength": 1 },
+    "loop_number": { "type": "integer", "minimum": 0 },
+    "design_file": {
+      "type": "string",
+      "description": "Relative path to the .fig design file.",
+      "pattern": "\\.fig$"
+    },
+    "exported_code": {
+      "type": "object",
+      "required": ["jsx", "html"],
+      "properties": {
+        "jsx": {
+          "type": "string",
+          "description": "Relative path to exported Tailwind JSX file."
+        },
+        "html": {
+          "type": "string",
+          "description": "Relative path to exported HTML + CSS file."
+        }
+      },
+      "additionalProperties": false
+    },
+    "design_tokens": {
+      "type": "string",
+      "description": "Relative path to design tokens JSON file."
+    },
+    "screenshots": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Relative path to a screenshot PNG."
+      },
+      "minItems": 1
+    },
+    "spec_reference": {
+      "type": "string",
+      "description": "Reference to the spec artifact this design implements."
+    },
+    "frames": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "description"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "description": "List of top-level frames in the design with descriptions."
+    }
+  },
+  "additionalProperties": true
+}

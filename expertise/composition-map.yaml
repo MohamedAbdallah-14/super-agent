@@ -1,0 +1,434 @@
+# expertise/composition-map.yaml
+# Single source of truth for module resolution per role per task
+#
+# Layers:
+#   1. always  — baked into every agent invocation for that role
+#   2. auto    — auto-composed from stack detection (applied to all stacks)
+#   3. stacks  — per-stack modules resolved from detected project stacks
+#   4. concerns — task-specific modules from declared concerns
+#
+# Role rules:
+#   executor      → expertise modules (HOW to build) + antipatterns (what NOT to do)
+#   designer      → design tooling modules (HOW to design) + design antipatterns
+#   verifier      → antipatterns ONLY (what to detect) + testing modules
+#   reviewer      → antipatterns ONLY (what to detect) + architecture + design (during spec-challenge)
+#   content-author -> content foundations + i18n + editorial constraints
+#
+# All paths are relative to expertise/
+
+always:
+  executor:
+    - antipatterns/process/ai-coding-antipatterns.md
+    - antipatterns/code/error-handling-antipatterns.md
+    - antipatterns/code/naming-and-abstraction.md
+  verifier:
+    - antipatterns/process/ai-coding-antipatterns.md
+    - antipatterns/code/testing-antipatterns.md
+    - antipatterns/code/state-management-antipatterns.md
+    - quality/evidence-based-verification.md
+  reviewer:
+    - antipatterns/process/ai-coding-antipatterns.md
+    - antipatterns/code/code-smells.md
+    - antipatterns/process/code-review-antipatterns.md
+    - antipatterns/code/dependency-antipatterns.md
+    - architecture/foundations/architectural-thinking.md
+    - architecture/foundations/coupling-and-cohesion.md
+    - antipatterns/code/architecture-antipatterns.md
+    - architecture/foundations/domain-driven-design.md
+  content-author:
+    - i18n/content/translation-management.md
+    - i18n/foundations/string-externalization.md
+    - i18n/foundations/pluralization-and-gender.md
+
+auto:
+  all-stacks:
+    all-roles:
+      - antipatterns/security/vulnerability-patterns.md
+      - antipatterns/security/secrets-antipatterns.md
+      - antipatterns/performance/performance-antipatterns.md
+      - antipatterns/process/technical-debt-antipatterns.md
+
+stacks:
+  flutter:
+    executor: [frontend/flutter.md, performance/platform-specific/flutter-performance.md]
+    antipatterns: [antipatterns/frontend/flutter-antipatterns.md]
+  react-native:
+    executor: [frontend/react-native.md, architecture/mobile-architecture/mobile-app-architecture.md]
+    antipatterns: [antipatterns/frontend/mobile-antipatterns.md]
+  node:
+    executor: [backend/node-typescript.md, performance/platform-specific/node-performance.md]
+    antipatterns: [antipatterns/backend/api-design-antipatterns.md]
+  react:
+    executor: [frontend/react.md, performance/platform-specific/react-performance.md]
+    antipatterns: [antipatterns/frontend/react-antipatterns.md, antipatterns/frontend/css-layout-antipatterns.md]
+  vue:
+    executor: [frontend/vue.md]
+    antipatterns: [antipatterns/frontend/spa-antipatterns.md, antipatterns/frontend/css-layout-antipatterns.md]
+  angular:
+    executor: [frontend/angular.md]
+    antipatterns: [antipatterns/frontend/spa-antipatterns.md, antipatterns/frontend/css-layout-antipatterns.md]
+  native-android:
+    executor: [frontend/native-android.md, architecture/mobile-architecture/mobile-app-architecture.md]
+    antipatterns: [antipatterns/frontend/mobile-antipatterns.md]
+  native-ios:
+    executor: [frontend/native-ios.md, architecture/mobile-architecture/mobile-app-architecture.md]
+    antipatterns: [antipatterns/frontend/mobile-antipatterns.md]
+  python:
+    executor: [backend/python-fastapi.md]
+    antipatterns: [antipatterns/backend/api-design-antipatterns.md]
+  go:
+    executor: [backend/go.md]
+    antipatterns: [antipatterns/backend/api-design-antipatterns.md]
+  rust:
+    executor: [backend/rust.md]
+    antipatterns: [antipatterns/backend/api-design-antipatterns.md]
+  java:
+    executor: [backend/java-spring.md]
+    antipatterns: [antipatterns/backend/api-design-antipatterns.md]
+  postgres:
+    executor: [infrastructure/database-postgres.md, performance/platform-specific/postgres-performance.md]
+    antipatterns: [antipatterns/backend/database-antipatterns.md]
+  mongodb:
+    executor: [infrastructure/database-mongodb.md]
+    antipatterns: [antipatterns/backend/database-antipatterns.md]
+  electron:
+    executor: [frontend/desktop-electron.md]
+    antipatterns: [antipatterns/frontend/spa-antipatterns.md]
+  next:
+    executor: [frontend/react.md, performance/web/ssr-and-hydration.md]
+    antipatterns: [antipatterns/frontend/react-antipatterns.md]
+  fastapi:
+    executor: [backend/python-fastapi.md, performance/backend/api-latency.md]
+    antipatterns: [antipatterns/backend/api-design-antipatterns.md]
+  gcp:
+    executor: [infrastructure/cloud-gcp.md]
+    antipatterns: [antipatterns/process/deployment-antipatterns.md]
+  aws:
+    executor: [infrastructure/cloud-aws.md]
+    antipatterns: [antipatterns/process/deployment-antipatterns.md]
+  solidity:
+    executor: [backend/solidity.md]
+    antipatterns: [security/smart-contract-security.md]
+  embedded:
+    executor: [backend/embedded-firmware.md]
+    antipatterns: []
+
+concerns:
+  rtl:
+    executor: [i18n/rtl/rtl-layout-mirroring.md, i18n/rtl/arabic-specific.md, i18n/rtl/rtl-forms-and-input.md]
+    reviewer: [i18n/rtl/rtl-fundamentals.md, i18n/rtl/rtl-typography.md, i18n/foundations/text-direction-bidi.md]
+    verifier: [i18n/rtl/rtl-testing-and-qa.md]
+    content-author: [content/foundations/content-modeling.md, content/foundations/editorial-standards.md]
+  rtl-advanced:
+    executor: [i18n/rtl/rtl-navigation-and-gestures.md, i18n/rtl/rtl-icons-and-images.md, i18n/rtl/rtl-animations-and-transitions.md]
+    reviewer: [i18n/rtl/hebrew-specific.md, i18n/advanced/bidirectional-text-algorithm.md]
+    verifier: [i18n/rtl/rtl-testing-and-qa.md]
+    content-author: [content/patterns/sample-content.md]
+  i18n:
+    executor: [i18n/foundations/i18n-architecture.md, i18n/foundations/string-externalization.md, i18n/foundations/pluralization-and-gender.md]
+    reviewer: [i18n/foundations/i18n-architecture.md, i18n/foundations/date-time-calendars.md, i18n/foundations/numbers-currency-units.md]
+    verifier: [i18n/advanced/testing-i18n.md]
+    content-author: [content/foundations/content-modeling.md, content/foundations/editorial-standards.md]
+  i18n-content:
+    executor: [i18n/content/translation-management.md, i18n/content/locale-specific-formatting.md, i18n/content/content-adaptation.md]
+    reviewer: [i18n/foundations/locale-and-language-tags.md, i18n/foundations/unicode-and-encoding.md]
+    verifier: [i18n/advanced/testing-i18n.md]
+    content-author: [content/foundations/terminology-governance.md, content/patterns/sample-content.md]
+  i18n-platform:
+    executor: [i18n/platform/react-i18n.md, i18n/platform/flutter-i18n.md, i18n/platform/backend-i18n.md]
+    reviewer: [i18n/platform/web-css-i18n.md, i18n/platform/native-android-i18n.md, i18n/platform/native-ios-i18n.md]
+    verifier: [i18n/advanced/performance-and-i18n.md, i18n/advanced/accessibility-and-i18n.md]
+  i18n-scripts:
+    executor: [i18n/advanced/complex-scripts.md, i18n/advanced/bidirectional-text-algorithm.md]
+    reviewer: [i18n/foundations/unicode-and-encoding.md]
+    verifier: [i18n/advanced/testing-i18n.md]
+  i18n-translation:
+    executor: [i18n/content/machine-translation-integration.md, i18n/content/translation-management.md]
+    reviewer: [i18n/content/content-adaptation.md]
+    verifier: [i18n/advanced/testing-i18n.md]
+    content-author: [content/foundations/content-modeling.md]
+  security-auth:
+    executor: [security/foundations/authentication.md, security/foundations/authorization.md]
+    reviewer: [security/foundations/owasp-top-10.md, security/foundations/secure-sdlc.md]
+    verifier: [antipatterns/backend/auth-antipatterns.md]
+  security-data:
+    executor: [security/data/data-encryption.md, security/data/pii-handling.md, security/data/database-security.md]
+    reviewer: [security/data/data-privacy-gdpr.md, security/foundations/cryptography.md]
+    verifier: [antipatterns/security/secrets-antipatterns.md]
+  security-testing:
+    executor: [security/testing/security-code-review.md, security/testing/vulnerability-scanning.md]
+    reviewer: [security/testing/threat-modeling.md]
+    verifier: [security/testing/penetration-testing.md]
+  security-infra:
+    executor: [security/infrastructure/network-security.md, security/infrastructure/logging-and-monitoring.md]
+    reviewer: [security/infrastructure/cloud-security-aws.md, security/infrastructure/cloud-security-gcp.md]
+    verifier: [security/infrastructure/incident-response.md, antipatterns/security/security-theater.md]
+  security-supply-chain:
+    executor: [security/foundations/supply-chain-security.md, security/foundations/secrets-management.md]
+    reviewer: [security/foundations/secure-sdlc.md]
+    verifier: [antipatterns/security/security-theater.md]
+  performance:
+    executor: [performance/foundations/caching-strategies.md, performance/foundations/algorithmic-complexity.md]
+    reviewer: [performance/foundations/performance-budgets.md, performance/foundations/measuring-and-profiling.md]
+    verifier: [antipatterns/performance/performance-antipatterns.md]
+  backend-performance:
+    executor: [performance/backend/database-query-optimization.md, performance/backend/connection-pooling.md, performance/backend/background-jobs.md]
+    reviewer: [performance/backend/rate-limiting-and-throttling.md, performance/backend/api-latency.md]
+    verifier: [antipatterns/performance/scaling-antipatterns.md]
+  mobile-performance:
+    executor: [performance/mobile/mobile-startup-time.md, performance/mobile/mobile-rendering.md, performance/mobile/mobile-memory-battery.md]
+    reviewer: [performance/mobile/mobile-network.md]
+    verifier: [performance/mobile/mobile-animations.md]
+  infra-performance:
+    executor: [performance/infrastructure/load-balancing.md, performance/infrastructure/cdn-and-edge.md]
+    reviewer: [performance/infrastructure/auto-scaling.md]
+    verifier: [antipatterns/performance/scaling-antipatterns.md]
+  observability:
+    executor: [performance/infrastructure/observability.md, security/infrastructure/logging-and-monitoring.md]
+    reviewer: [performance/foundations/measuring-and-profiling.md]
+    verifier: [security/infrastructure/incident-response.md]
+  async:
+    executor: [performance/foundations/concurrency-and-parallelism.md, architecture/patterns/event-driven.md]
+    reviewer: [architecture/patterns/event-driven.md, architecture/distributed/saga-pattern.md]
+    verifier: [antipatterns/code/async-antipatterns.md]
+  testing-strategy:
+    executor: [quality/testing-web.md, quality/testing-api.md]
+    reviewer: [quality/performance.md]
+    verifier: [quality/testing-mobile.md, antipatterns/code/testing-antipatterns.md]
+  accessibility:
+    executor: [quality/accessibility.md]
+    reviewer: [design/foundations/accessibility-design.md, i18n/advanced/accessibility-and-i18n.md]
+    verifier: [antipatterns/design/accessibility-antipatterns.md]
+    content-author: [content/patterns/accessibility-copy.md]
+  realtime:
+    executor: [architecture/integration/websockets-realtime.md]
+    reviewer: [architecture/integration/websockets-realtime.md]
+    verifier: []
+    content-author: [content/patterns/notification-content.md]
+  offline:
+    executor: [architecture/mobile-architecture/offline-first.md, architecture/mobile-architecture/push-and-sync.md]
+    reviewer: [architecture/mobile-architecture/offline-first.md]
+    verifier: []
+    content-author: [content/patterns/state-copy.md]
+  microservices:
+    executor: [architecture/patterns/microservices.md, architecture/distributed/saga-pattern.md]
+    reviewer: [architecture/patterns/microservices.md, architecture/patterns/modular-monolith.md]
+    verifier: [antipatterns/backend/microservices-antipatterns.md]
+  gamification:
+    executor: [design/patterns/gamification.md]
+    reviewer: [design/patterns/gamification.md, design/psychology/persuasive-design.md]
+    verifier: [antipatterns/design/dark-patterns.md]
+  api-design:
+    executor: [architecture/integration/api-design-rest.md, architecture/integration/api-design-graphql.md, security/web/api-security.md]
+    reviewer: [architecture/integration/api-design-rest.md, architecture/integration/api-design-grpc.md]
+    verifier: [antipatterns/backend/api-design-antipatterns.md]
+  distributed:
+    executor: [architecture/distributed/distributed-systems-fundamentals.md, architecture/distributed/circuit-breaker-bulkhead.md, architecture/distributed/idempotency-and-retry.md]
+    reviewer: [architecture/distributed/cap-theorem-and-tradeoffs.md, architecture/distributed/consensus-and-coordination.md]
+    verifier: [antipatterns/backend/microservices-antipatterns.md]
+  data-layer:
+    executor: [architecture/data/data-modeling.md, architecture/data/caching-architecture.md, architecture/data/event-streams-and-queues.md]
+    reviewer: [architecture/data/sql-vs-nosql.md, architecture/data/data-consistency.md]
+    verifier: [antipatterns/backend/caching-antipatterns.md]
+  search:
+    executor: [architecture/data/search-architecture.md]
+    reviewer: [architecture/data/data-modeling.md]
+    verifier: [antipatterns/backend/database-antipatterns.md]
+  mobile-security:
+    executor: [security/mobile/mobile-data-storage.md, security/mobile/mobile-network-security.md]
+    reviewer: [security/mobile/mobile-binary-protection.md]
+    verifier: [security/mobile/mobile-android-security.md, security/mobile/mobile-ios-security.md]
+  web-security:
+    executor: [security/web/xss.md, security/web/csrf.md, security/web/injection.md, security/web/session-management.md]
+    reviewer: [security/foundations/owasp-top-10.md, security/web/cors-and-headers.md, security/web/file-upload.md]
+    verifier: [antipatterns/security/vulnerability-patterns.md]
+  design-system:
+    executor: [design/disciplines/design-systems.md, design/foundations/color-theory.md, design/foundations/typography.md, design/foundations/spacing-and-layout.md]
+    reviewer: [design/foundations/visual-hierarchy.md, design/foundations/accessibility-design.md]
+    verifier: [antipatterns/design/ui-antipatterns.md, antipatterns/design/ux-antipatterns.md]
+  design-tooling:
+    designer: [design/tooling/open-pencil.md]
+    reviewer: [design/foundations/accessibility-design.md, design/foundations/visual-hierarchy.md]
+    verifier: [antipatterns/design/ui-antipatterns.md, antipatterns/design/ux-antipatterns.md]
+    content-author: [content/patterns/state-copy.md, content/foundations/microcopy.md]
+  cloud-infra:
+    executor: [infrastructure/cloud-aws.md, infrastructure/devops-cicd.md]
+    reviewer: [security/infrastructure/container-security.md, infrastructure/cloud-gcp.md]
+    verifier: [antipatterns/process/deployment-antipatterns.md]
+  web-performance:
+    executor: [performance/web/web-vitals.md, performance/web/bundle-optimization.md, performance/web/rendering-performance.md]
+    reviewer: [performance/foundations/performance-budgets.md, performance/web/image-and-media.md]
+    verifier: [antipatterns/performance/performance-antipatterns.md, antipatterns/performance/premature-optimization.md]
+  event-driven:
+    executor: [architecture/patterns/event-driven.md, architecture/patterns/cqrs-event-sourcing.md]
+    reviewer: [architecture/data/event-streams-and-queues.md]
+    verifier: [antipatterns/code/async-antipatterns.md]
+  cqrs:
+    executor: [architecture/patterns/cqrs-event-sourcing.md]
+    reviewer: [architecture/data/data-consistency.md]
+    verifier: [antipatterns/backend/database-antipatterns.md]
+  architecture-decisions:
+    executor: [architecture/decisions/architecture-decision-records.md, architecture/decisions/technology-selection.md]
+    reviewer: [architecture/decisions/build-vs-buy.md, architecture/decisions/monolith-to-microservices.md]
+    verifier: []
+  architecture-patterns:
+    executor: [architecture/patterns/hexagonal-clean-architecture.md, architecture/patterns/layered-architecture.md, architecture/foundations/design-principles-solid.md, architecture/foundations/separation-of-concerns.md]
+    reviewer: [architecture/patterns/monolith.md, architecture/patterns/plugin-architecture.md]
+    verifier: [antipatterns/code/architecture-antipatterns.md]
+  serverless:
+    executor: [architecture/patterns/serverless.md]
+    reviewer: [architecture/patterns/serverless.md, architecture/scaling/stateless-design.md]
+    verifier: [antipatterns/performance/scaling-antipatterns.md]
+  scaling:
+    executor: [architecture/scaling/horizontal-vs-vertical.md, architecture/scaling/stateless-design.md, architecture/scaling/database-scaling.md]
+    reviewer: [architecture/scaling/multi-tenancy.md]
+    verifier: [antipatterns/performance/scaling-antipatterns.md]
+  feature-flags:
+    executor: [architecture/scaling/feature-flags-and-rollouts.md]
+    reviewer: [architecture/scaling/feature-flags-and-rollouts.md]
+    verifier: [antipatterns/process/deployment-antipatterns.md]
+  multi-tenancy:
+    executor: [architecture/scaling/multi-tenancy.md]
+    reviewer: [architecture/scaling/multi-tenancy.md, architecture/data/data-consistency.md]
+    verifier: [antipatterns/security/vulnerability-patterns.md]
+  third-party-integration:
+    executor: [architecture/integration/third-party-integration.md, architecture/integration/webhooks-and-callbacks.md]
+    reviewer: [architecture/integration/api-design-rest.md]
+    verifier: [antipatterns/backend/api-design-antipatterns.md]
+  mobile-arch:
+    executor: [architecture/mobile-architecture/mobile-app-architecture.md, architecture/mobile-architecture/mobile-backend-for-frontend.md]
+    reviewer: [architecture/mobile-architecture/push-and-sync.md]
+    verifier: [antipatterns/frontend/mobile-antipatterns.md]
+    content-author: [content/foundations/microcopy.md]
+  twelve-factor:
+    executor: [architecture/foundations/twelve-factor-app.md]
+    reviewer: [architecture/foundations/twelve-factor-app.md, architecture/scaling/stateless-design.md]
+    verifier: []
+  responsive:
+    executor: [design/disciplines/responsive-design.md, design/platforms/web-responsive.md]
+    reviewer: [design/platforms/tablet.md]
+    verifier: [antipatterns/design/ui-antipatterns.md]
+  dark-mode:
+    executor: [design/disciplines/dark-mode-theming.md]
+    reviewer: [design/foundations/color-theory.md]
+    verifier: [antipatterns/design/ui-antipatterns.md]
+  onboarding-ux:
+    executor: [design/patterns/onboarding.md, design/patterns/feedback-and-states.md]
+    reviewer: [design/psychology/cognitive-load.md, design/psychology/user-mental-models.md]
+    verifier: [antipatterns/design/ux-antipatterns.md]
+    content-author: [content/patterns/state-copy.md, content/foundations/microcopy.md]
+  forms-ux:
+    executor: [design/patterns/forms-and-input.md, design/patterns/feedback-and-states.md]
+    reviewer: [design/psychology/error-psychology.md]
+    verifier: [antipatterns/design/ux-antipatterns.md]
+    content-author: [content/foundations/microcopy.md, content/patterns/state-copy.md]
+  navigation-ux:
+    executor: [design/patterns/navigation.md, design/patterns/search-and-filter.md]
+    reviewer: [design/disciplines/information-architecture.md]
+    verifier: [antipatterns/design/ux-antipatterns.md]
+    content-author: [content/foundations/microcopy.md]
+  notifications-ux:
+    executor: [design/patterns/notifications.md, design/patterns/settings-and-preferences.md]
+    reviewer: [design/psychology/cognitive-load.md]
+    verifier: [antipatterns/design/dark-patterns.md]
+    content-author: [content/patterns/notification-content.md]
+  e-commerce:
+    executor: [design/patterns/e-commerce.md, design/patterns/authentication-flows.md]
+    reviewer: [design/psychology/persuasive-design.md, design/patterns/forms-and-input.md]
+    verifier: [antipatterns/design/dark-patterns.md, antipatterns/design/ux-antipatterns.md]
+    content-author: [content/foundations/microcopy.md, content/patterns/sample-content.md, content/foundations/terminology-governance.md]
+  social:
+    executor: [design/patterns/social-and-community.md, design/patterns/content-consumption.md]
+    reviewer: [design/psychology/persuasive-design.md]
+    verifier: [antipatterns/design/dark-patterns.md]
+    content-author: [content/patterns/notification-content.md]
+  data-display:
+    executor: [design/patterns/data-display.md]
+    reviewer: [design/foundations/visual-hierarchy.md]
+    verifier: [antipatterns/design/ui-antipatterns.md]
+    content-author: [content/foundations/microcopy.md, content/patterns/state-copy.md]
+  interaction-design:
+    executor: [design/disciplines/interaction-design.md, design/foundations/motion-and-animation.md]
+    reviewer: [design/foundations/iconography.md, design/psychology/cognitive-load.md]
+    verifier: [antipatterns/design/ui-antipatterns.md]
+  user-research:
+    executor: [design/disciplines/user-research.md, design/disciplines/usability-testing.md]
+    reviewer: [design/psychology/user-mental-models.md, design/psychology/error-psychology.md]
+    verifier: [antipatterns/design/ux-antipatterns.md]
+  platform-mobile:
+    executor: [design/platforms/mobile-cross-platform.md]
+    reviewer: [design/platforms/mobile-android.md, design/platforms/mobile-ios.md]
+    verifier: [antipatterns/frontend/mobile-antipatterns.md]
+    content-author: [content/foundations/microcopy.md]
+  platform-desktop:
+    executor: [design/platforms/desktop-native.md]
+    reviewer: [design/platforms/desktop-native.md]
+    verifier: [antipatterns/design/ui-antipatterns.md]
+  platform-web:
+    executor: [design/platforms/web-dashboard.md, design/platforms/web-responsive.md]
+    reviewer: [design/disciplines/responsive-design.md]
+    verifier: [antipatterns/design/ui-antipatterns.md]
+    content-author: [content/foundations/microcopy.md]
+  auth-flows:
+    executor: [design/patterns/authentication-flows.md, security/foundations/authentication.md]
+    reviewer: [security/foundations/authorization.md]
+    verifier: [antipatterns/backend/auth-antipatterns.md]
+    content-author: [content/patterns/state-copy.md, content/foundations/microcopy.md]
+  memory-management:
+    executor: [performance/foundations/memory-management.md, performance/foundations/concurrency-and-parallelism.md]
+    reviewer: [performance/foundations/algorithmic-complexity.md]
+    verifier: [antipatterns/performance/performance-antipatterns.md]
+  network-optimization:
+    executor: [performance/web/network-optimization.md, performance/web/image-and-media.md]
+    reviewer: [performance/infrastructure/cdn-and-edge.md]
+    verifier: [antipatterns/performance/premature-optimization.md]
+  cybersecurity:
+    executor: [infrastructure/cybersecurity.md, security/infrastructure/network-security.md]
+    reviewer: [security/foundations/secure-sdlc.md]
+    verifier: [antipatterns/security/security-theater.md]
+  rtl-design:
+    executor: [design/foundations/rtl-design.md]
+    reviewer: [i18n/rtl/rtl-fundamentals.md]
+    verifier: [i18n/rtl/rtl-testing-and-qa.md]
+
+  # New concerns from expertise expansion (2026-03-12)
+  compliance:
+    executor: [security/compliance-frameworks.md]
+    reviewer: [security/compliance-frameworks.md, security/data/data-privacy-gdpr.md]
+    verifier: [antipatterns/security/security-theater.md]
+  ml-model-qa:
+    executor: [quality/ml-model-audit.md]
+    reviewer: [quality/ml-model-audit.md]
+    verifier: [quality/ml-model-audit.md]
+  agentic-identity:
+    executor: [security/agentic-identity.md]
+    reviewer: [security/agentic-identity.md]
+    verifier: [antipatterns/security/vulnerability-patterns.md]
+  evidence-verification:
+    verifier: [quality/evidence-based-verification.md]
+    reviewer: [quality/evidence-based-verification.md]
+  microinteractions:
+    executor: [design/patterns/microinteractions.md]
+    reviewer: [design/psychology/cognitive-load.md]
+    verifier: [antipatterns/design/ux-antipatterns.md]
+  behavioral-ux:
+    executor: [design/psychology/behavioral-nudges.md]
+    reviewer: [design/psychology/cognitive-load.md, design/psychology/persuasive-design.md]
+    verifier: [antipatterns/design/dark-patterns.md]
+
+  # Audit-specific concerns (loaded by /run-audit skill, composed onto researcher role)
+  audit-security:
+    researcher: [security/foundations/owasp-top-10.md, security/foundations/supply-chain-security.md, security/foundations/secrets-management.md, security/web/xss.md, security/web/csrf.md, security/web/injection.md]
+    reviewer: [security/foundations/secure-sdlc.md, security/foundations/cryptography.md]
+  audit-code-quality:
+    researcher: [antipatterns/code/code-smells.md, antipatterns/code/naming-and-abstraction.md, antipatterns/code/error-handling-antipatterns.md, antipatterns/code/testing-antipatterns.md]
+    reviewer: [antipatterns/process/ai-coding-antipatterns.md]
+  audit-architecture:
+    researcher: [architecture/foundations/architectural-thinking.md, architecture/foundations/coupling-and-cohesion.md, architecture/foundations/design-principles-solid.md, architecture/foundations/separation-of-concerns.md, antipatterns/code/architecture-antipatterns.md]
+    reviewer: [architecture/patterns/hexagonal-clean-architecture.md]
+  audit-performance:
+    researcher: [performance/foundations/caching-strategies.md, performance/foundations/algorithmic-complexity.md, performance/foundations/memory-management.md, antipatterns/performance/performance-antipatterns.md]
+    reviewer: [performance/foundations/performance-budgets.md]
+  audit-dependencies:
+    researcher: [antipatterns/code/dependency-antipatterns.md, security/foundations/supply-chain-security.md, antipatterns/process/technical-debt-antipatterns.md]
+    reviewer: [security/foundations/secure-sdlc.md]

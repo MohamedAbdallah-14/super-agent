@@ -1,0 +1,19 @@
+{
+  "run_id": "<run-id>",
+  "phase": "author",
+  "role": "author",
+  "loop": 1,
+  "status": "draft",
+  "sources": [
+    "<spec-artifact>"
+  ],
+  "microcopy": [],
+  "i18n_keys": [],
+  "seed_data": [],
+  "terminology": [],
+  "asset_metadata": [],
+  "state_coverage": {},
+  "notifications": [],
+  "editorial_constraints": {},
+  "coverage_matrix": []
+}

@@ -1,0 +1,19 @@
+# SuperAgent for Codex
+
+This host package is generated from the canonical SuperAgent sources.
+
+## Canonical facts
+
+- project: SuperAgent
+- hosts: claude, codex, gemini, cursor
+- phases: clarify, discover, specify, spec_challenge, author, design, design_review, plan, plan_review, execute, verify, review, learn, prepare_next
+- roles: clarifier, researcher, specifier, content-author, designer, planner, executor, verifier, reviewer, learner
+- protected paths: input, roles, workflows, schemas, exports/hosts
+- state root default: ~/.superagent/projects/{project_slug}
+
+## Source of truth
+
+- `superagent.manifest.yaml`
+- `roles/*.md`
+- `workflows/*.md`
+- `hooks/definitions/*.yaml`

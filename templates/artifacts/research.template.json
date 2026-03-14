@@ -1,0 +1,12 @@
+{
+  "run_id": "<run-id>",
+  "phase": "discover",
+  "role": "researcher",
+  "loop": 1,
+  "status": "draft",
+  "sources": [
+    "input/<briefing-file>"
+  ],
+  "findings": [],
+  "citations": []
+}

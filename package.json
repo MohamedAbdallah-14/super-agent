@@ -1,0 +1,73 @@
+{
+  "name": "@superagent-os/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Host-native engineering OS kit for AI coding agents — roles, phases, expertise modules, quality gates for Claude, Codex, Gemini & Cursor",
+  "bin": {
+    "superagent": "tooling/src/cli.js"
+  },
+  "files": [
+    "tooling/src/",
+    "roles/",
+    "workflows/",
+    "skills/",
+    "schemas/",
+    "templates/",
+    "expertise/",
+    "hooks/",
+    "exports/",
+    "docs/",
+    "assets/",
+    "superagent.manifest.yaml",
+    "AGENTS.md",
+    "llms.txt",
+    "llms-full.txt",
+    "LICENSE",
+    "README.md",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "test": "npm run test:active",
+    "test:active": "node --test tooling/test/cli.test.js tooling/test/validate.test.js tooling/test/index.test.js tooling/test/doctor-status.test.js tooling/test/guard-hooks.test.js tooling/test/export.test.js tooling/test/capture.test.js tooling/test/schema-examples.test.js tooling/test/git-flow-docs.test.js tooling/test/role-contracts.test.js tooling/test/ci-workflow.test.js tooling/test/contributing.test.js tooling/test/author-artifact.test.js",
+    "prepublishOnly": "npm test"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MohamedAbdallah-14/super-agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MohamedAbdallah-14/super-agent/issues"
+  },
+  "homepage": "https://github.com/MohamedAbdallah-14/super-agent#readme",
+  "license": "MIT",
+  "keywords": [
+    "ai-agents",
+    "agentic-ai",
+    "workflow-automation",
+    "llm",
+    "developer-tools",
+    "claude",
+    "codex",
+    "cursor",
+    "agent-framework",
+    "tdd"
+  ],
+  "dependencies": {
+    "ajv": "^8.18.0",
+    "gray-matter": "^4.0.3",
+    "yaml": "^2.0.0"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.6",
+    "@semantic-release/npm": "^12.0.2",
+    "@semantic-release/release-notes-generator": "^14.1.0",
+    "semantic-release": "^24.2.9"
+  }
+}

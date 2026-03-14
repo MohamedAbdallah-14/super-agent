@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+import { readFileSync } from 'node:fs';
+
+import { evaluateProtectedPathWriteGuard } from '../tooling/src/guards/protected-path-write-guard.js';
+
+try {
+  const input = readFileSync(0, 'utf8');
+  const payload = input.trim() ? JSON.parse(input) : {};
+  const decision = evaluateProtectedPathWriteGuard(payload);
+
+  process.stdout.write(`${JSON.stringify({ guard_decision: decision })}\n`);
+  process.exit(decision.allowed ? 0 : 42);
+} catch (error) {
+  process.stderr.write(`${error.message}\n`);
+  process.exit(1);
+}

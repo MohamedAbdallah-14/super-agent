@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superagent.dev/schemas/export-manifest.schema.json",
+  "title": "Export Manifest",
+  "type": "object",
+  "required": ["host", "source_hashes"],
+  "properties": {
+    "host": {
+      "enum": ["claude", "codex", "gemini", "cursor"]
+    },
+    "source_hashes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "additionalProperties": true
+}

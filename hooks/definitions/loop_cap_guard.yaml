@@ -1,0 +1,21 @@
+id: loop_cap_guard
+trigger: loop_cap_guard
+description: Stop additional loop iterations after the configured phase cap is reached.
+input_contract:
+  required:
+    - run_id
+    - phase
+allowed_side_effects:
+  - read_status
+  - block_execution
+output_contract:
+  produces:
+    - guard_decision
+failure_behavior:
+  mode: block
+  exit_code: 43
+host_fallback:
+  claude: native_or_wrapper
+  codex: wrapper_command
+  gemini: wrapper_command
+  cursor: native_or_wrapper

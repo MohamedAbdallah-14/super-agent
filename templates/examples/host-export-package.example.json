@@ -1,0 +1,11 @@
+{
+  "host": "claude",
+  "sources": [
+    "superagent.manifest.yaml",
+    "roles/clarifier.md"
+  ],
+  "files": [
+    "CLAUDE.md",
+    ".claude/settings.json"
+  ]
+}

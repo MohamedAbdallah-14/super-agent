@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superagent.dev/schemas/host-export-package.schema.json",
+  "title": "Host Export Package",
+  "type": "object",
+  "required": ["host", "sources", "files"],
+  "properties": {
+    "host": {
+      "enum": ["claude", "codex", "gemini", "cursor"]
+    },
+    "sources": { "type": "array", "items": { "type": "string" } },
+    "files": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "additionalProperties": true
+}

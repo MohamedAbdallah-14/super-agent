@@ -1,0 +1,65 @@
+manifest_version: 2
+project:
+  name: superagent-example
+  display_name: SuperAgent Example
+  version: 0.1.0
+  description: Example canonical manifest for schema validation.
+  license: MIT
+versioning_policy:
+  strategy: semver
+  stability: pre-1.0-alpha
+  compatibility: additive_changes_only_until_manifest_bump
+paths:
+  input: input
+  artifacts_repo: artifacts
+  roles: roles
+  workflows: workflows
+  skills: skills
+  hooks: hooks
+  templates: templates
+  schemas: schemas
+  expertise: expertise
+  docs: docs
+  exports: exports
+  tooling: tooling
+  memory: memory
+  examples: examples
+  state_root_default: ~/.superagent/projects/{project_slug}
+hosts:
+  - claude
+  - codex
+workflows:
+  - clarify
+  - plan
+  - execute
+phases:
+  - clarify
+  - plan
+  - execute
+roles:
+  - clarifier
+  - planner
+  - executor
+export_targets:
+  - claude
+  - codex
+required_hooks:
+  - session_start
+protected_paths:
+  - input
+  - exports/hosts
+prohibited_terms:
+  - agent-os
+adapters:
+  context_mode:
+    enabled_by_default: false
+    required: false
+    install_mode: external
+    package_presence: optional
+index:
+  core_parsers:
+    - builtin-heuristic-markdown
+  optional_language_plugins: []
+validation_checks:
+  - docs-truth
+  - export-drift

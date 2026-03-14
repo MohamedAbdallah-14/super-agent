@@ -1,0 +1,19 @@
+id: pre_tool_capture_route
+trigger: pre_tool_capture_route
+description: Route large command output away from model context and into captured artifacts.
+input_contract:
+  required:
+    - command
+allowed_side_effects:
+  - create_capture_target
+output_contract:
+  produces:
+    - capture_path
+failure_behavior:
+  mode: warn
+  exit_code: 0
+host_fallback:
+  claude: native_hook
+  codex: wrapper_command
+  gemini: wrapper_command
+  cursor: native_or_wrapper

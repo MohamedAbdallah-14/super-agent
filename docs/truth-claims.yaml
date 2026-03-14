@@ -1,0 +1,210 @@
+- id: command-validate
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent validate
+  verifier: command_registry
+  required: true
+- id: command-index
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent index
+  verifier: command_registry
+  required: true
+- id: command-recall
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent recall
+  verifier: command_registry
+  required: true
+- id: command-validate-manifest
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent validate manifest
+  verifier: command_registry
+  required: true
+- id: command-validate-hooks
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent validate hooks
+  verifier: command_registry
+  required: true
+- id: command-validate-docs
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent validate docs
+  verifier: command_registry
+  required: true
+- id: command-validate-brand
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent validate brand
+  verifier: command_registry
+  required: true
+- id: command-validate-runtime
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent validate runtime
+  verifier: command_registry
+  required: true
+- id: command-validate-artifacts
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent validate artifacts
+  verifier: command_registry
+  required: true
+- id: command-export-build
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent export build
+  verifier: command_registry
+  required: true
+- id: command-export-check
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent export --check
+  verifier: command_registry
+  required: true
+- id: command-index-build
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent index build
+  verifier: command_registry
+  required: true
+- id: command-index-refresh
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent index refresh
+  verifier: command_registry
+  required: true
+- id: command-index-stats
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent index stats
+  verifier: command_registry
+  required: true
+- id: command-index-search-symbols
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent index search-symbols
+  verifier: command_registry
+  required: true
+- id: command-index-get-symbol
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent index get-symbol
+  verifier: command_registry
+  required: true
+- id: command-index-get-file-outline
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent index get-file-outline
+  verifier: command_registry
+  required: true
+- id: command-index-summarize
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent index summarize
+  verifier: command_registry
+  required: true
+- id: command-recall-file
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent recall file
+  verifier: command_registry
+  required: true
+- id: command-recall-symbol
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent recall symbol
+  verifier: command_registry
+  required: true
+- id: command-doctor
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent doctor
+  verifier: command_registry
+  required: true
+- id: command-status
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent status
+  verifier: command_registry
+  required: true
+- id: command-capture-family
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent capture
+  verifier: command_registry
+  required: true
+- id: command-capture-init
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent capture init
+  verifier: command_registry
+  required: true
+- id: command-capture-event
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent capture event
+  verifier: command_registry
+  required: true
+- id: command-capture-route
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent capture route
+  verifier: command_registry
+  required: true
+- id: command-capture-output
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent capture output
+  verifier: command_registry
+  required: true
+- id: command-capture-summary
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent capture summary
+  verifier: command_registry
+  required: true
+- id: command-validate-changelog
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent validate changelog
+  verifier: command_registry
+  required: true
+- id: command-validate-commits
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent validate commits
+  verifier: command_registry
+  required: true
+- id: command-validate-branches
+  file: docs/reference/tooling-cli.md
+  claim_type: command
+  subject: superagent validate branches
+  verifier: command_registry
+  required: true
+- id: generated-claude-package
+  file: docs/reference/host-exports.md
+  claim_type: generated_file
+  subject: exports/hosts/claude/CLAUDE.md
+  verifier: path_exists
+  required: true
+- id: generated-codex-package
+  file: docs/reference/host-exports.md
+  claim_type: generated_file
+  subject: exports/hosts/codex/AGENTS.md
+  verifier: path_exists
+  required: true
+- id: generated-gemini-package
+  file: docs/reference/host-exports.md
+  claim_type: generated_file
+  subject: exports/hosts/gemini/GEMINI.md
+  verifier: path_exists
+  required: true
+- id: generated-cursor-package
+  file: docs/reference/host-exports.md
+  claim_type: generated_file
+  subject: exports/hosts/cursor/.cursor/hooks.json
+  verifier: path_exists
+  required: true

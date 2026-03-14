@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'codex/**'
+      - 'release/**'
+      - 'hotfix/**'
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [22, 24]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+      - name: Run root verification
+        run: npm test
+
+      - name: Validate manifest
+        run: node tooling/src/cli.js validate manifest
+
+      - name: Validate hooks
+        run: node tooling/src/cli.js validate hooks
+
+      - name: Validate docs truth
+        run: node tooling/src/cli.js validate docs
+
+      - name: Validate brand truth
+        run: node tooling/src/cli.js validate brand
+
+      - name: Validate runtime surface
+        run: node tooling/src/cli.js validate runtime
+
+      - name: Check export drift
+        run: node tooling/src/cli.js export --check
+
+      - name: Rebuild host exports
+        if: success()
+        run: node tooling/src/cli.js export build
+
+      - name: Verify generated exports are committed
+        if: success()
+        run: git diff --exit-code -- exports/hosts
+
+      - name: Validate branch name
+        if: github.event_name == 'pull_request'
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: node tooling/src/cli.js validate branches --branch "$BRANCH"
+
+      - name: Validate conventional commits
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node tooling/src/cli.js validate commits --base "$BASE_SHA" --head "$HEAD_SHA"
+
+      - name: Validate changelog format
+        if: github.event_name == 'pull_request'
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node tooling/src/cli.js validate changelog --head "$HEAD_SHA"
+
+      - name: Validate changelog format (push)
+        if: github.event_name == 'push'
+        run: node tooling/src/cli.js validate changelog
+
+      - name: Require changelog entries
+        if: >-
+          github.event_name == 'pull_request' &&
+          (startsWith(github.head_ref, 'feat/') ||
+           startsWith(github.head_ref, 'feature/') ||
+           startsWith(github.head_ref, 'codex/') ||
+           startsWith(github.head_ref, 'hotfix/'))
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node tooling/src/cli.js validate changelog --require-entries --base "$BASE_SHA" --head "$HEAD_SHA"

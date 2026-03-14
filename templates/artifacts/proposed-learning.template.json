@@ -1,0 +1,12 @@
+{
+  "run_id": "<run-id>",
+  "phase": "learn",
+  "role": "learner",
+  "loop": 1,
+  "status": "proposed",
+  "sources": [
+    "<review-findings>"
+  ],
+  "scope_tags": [],
+  "evidence": []
+}

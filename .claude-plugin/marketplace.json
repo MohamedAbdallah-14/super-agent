@@ -1,0 +1,14 @@
+{
+  "plugins": [
+    {
+      "name": "superagent",
+      "source": {
+        "source": "github",
+        "owner": "MohamedAbdallah-14",
+        "repo": "super-agent"
+      },
+      "description": "Host-native engineering OS kit — 10 canonical roles, 14-phase pipeline, 309 expertise modules for Claude, Codex, Gemini & Cursor",
+      "version": "0.1.0"
+    }
+  ]
+}

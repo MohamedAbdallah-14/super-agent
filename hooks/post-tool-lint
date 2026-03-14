@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+import { existsSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+
+function readPayload() {
+  try {
+    const raw = readFileSync(0, 'utf-8').trim();
+    if (raw.length === 0) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+const payload = readPayload();
+const envFile = process.env.CLAUDE_TOOL_FILE_PATH;
+const filePath = payload?.tool_input?.file_path ?? envFile;
+
+if (!filePath || !filePath.endsWith('.js')) {
+  process.exit(0);
+}
+
+if (!existsSync(filePath)) {
+  process.exit(0);
+}
+
+try {
+  execFileSync('node', ['--check', filePath], { stdio: 'pipe' });
+  process.exit(0);
+} catch (err) {
+  const stderr = err && typeof err === 'object' && 'stderr' in err
+    ? String(err.stderr)
+    : String(err);
+  process.stderr.write(`Syntax error in ${filePath}:\n${stderr}\n`);
+  process.exit(2);
+}

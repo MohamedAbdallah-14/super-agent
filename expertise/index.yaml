@@ -1,0 +1,200 @@
+modules:
+  - id: antipatterns
+    path: expertise/antipatterns
+    domain: review
+    use_cases:
+      - adversarial review
+      - planning risk checks
+      - implementation quality checks
+    review_applicability:
+      - plan_review
+      - review
+      - learn
+    freshness_date: 2026-03-11
+  - id: architecture
+    path: expertise/architecture
+    domain: system-design
+    use_cases:
+      - specification
+      - planning
+      - migration analysis
+    review_applicability:
+      - specify
+      - plan
+      - review
+    freshness_date: 2026-03-11
+  - id: backend
+    path: expertise/backend
+    domain: implementation
+    use_cases:
+      - backend feature work
+      - stack-specific review
+    review_applicability:
+      - execute
+      - review
+    freshness_date: 2026-03-11
+  - id: design
+    path: expertise/design
+    domain: product-design
+    use_cases:
+      - design review
+      - UX planning
+    review_applicability:
+      - clarify
+      - specify
+      - review
+    freshness_date: 2026-03-11
+  - id: frontend
+    path: expertise/frontend
+    domain: implementation
+    use_cases:
+      - frontend feature work
+      - stack-specific review
+    review_applicability:
+      - execute
+      - review
+    freshness_date: 2026-03-12
+  - id: i18n
+    path: expertise/i18n
+    domain: product-quality
+    use_cases:
+      - localization planning
+      - rtl review
+    review_applicability:
+      - specify
+      - review
+    freshness_date: 2026-03-11
+  - id: infrastructure
+    path: expertise/infrastructure
+    domain: operations
+    use_cases:
+      - deployment planning
+      - infra review
+    review_applicability:
+      - plan
+      - review
+    freshness_date: 2026-03-11
+  - id: performance
+    path: expertise/performance
+    domain: performance
+    use_cases:
+      - performance-sensitive planning
+      - profiling and optimization review
+    review_applicability:
+      - plan
+      - review
+    freshness_date: 2026-03-11
+  # --- Expansion modules (2026-03-12, gap analysis from agency-agents) ---
+  - id: quality-evidence-verification
+    path: expertise/quality/evidence-based-verification.md
+    domain: quality
+    use_cases:
+      - QA verification
+      - evidence-based review
+    review_applicability:
+      - verify
+      - review
+    freshness_date: 2026-03-12
+  - id: security-compliance
+    path: expertise/security/compliance-frameworks.md
+    domain: compliance
+    use_cases:
+      - regulatory compliance
+      - data privacy
+    review_applicability:
+      - specify
+      - review
+    freshness_date: 2026-03-12
+  - id: quality-ml-audit
+    path: expertise/quality/ml-model-audit.md
+    domain: quality
+    use_cases:
+      - ML model validation
+      - model monitoring
+    review_applicability:
+      - verify
+      - review
+    freshness_date: 2026-03-12
+  - id: backend-solidity
+    path: expertise/backend/solidity.md
+    domain: implementation
+    use_cases:
+      - smart contract development
+      - Web3 features
+    review_applicability:
+      - execute
+      - review
+    freshness_date: 2026-03-12
+  - id: security-smart-contracts
+    path: expertise/security/smart-contract-security.md
+    domain: security
+    use_cases:
+      - smart contract audit
+      - Web3 security
+    review_applicability:
+      - verify
+      - review
+    freshness_date: 2026-03-12
+  - id: backend-embedded
+    path: expertise/backend/embedded-firmware.md
+    domain: implementation
+    use_cases:
+      - firmware development
+      - IoT features
+    review_applicability:
+      - execute
+      - review
+    freshness_date: 2026-03-12
+  - id: security-agentic-identity
+    path: expertise/security/agentic-identity.md
+    domain: security
+    use_cases:
+      - multi-agent security
+      - agent trust
+    review_applicability:
+      - specify
+      - review
+    freshness_date: 2026-03-12
+  - id: design-behavioral-nudges
+    path: expertise/design/psychology/behavioral-nudges.md
+    domain: product-design
+    use_cases:
+      - UX design
+      - user engagement
+    review_applicability:
+      - clarify
+      - specify
+    freshness_date: 2026-03-12
+  - id: design-microinteractions
+    path: expertise/design/patterns/microinteractions.md
+    domain: product-design
+    use_cases:
+      - UI polish
+      - animation design
+    review_applicability:
+      - execute
+      - review
+    freshness_date: 2026-03-12
+  - id: frontend-react-native
+    path: expertise/frontend/react-native.md
+    domain: implementation
+    use_cases:
+      - React Native feature work
+      - Expo / cross-platform mobile development
+    review_applicability:
+      - execute
+      - review
+    freshness_date: 2026-03-12
+  - id: content
+    path: expertise/content
+    domain: content-authoring
+    use_cases:
+      - microcopy
+      - localization
+      - content modeling
+      - editorial standards
+    review_applicability:
+      - author
+      - design_review
+      - review
+    freshness_date: 2026-03-14

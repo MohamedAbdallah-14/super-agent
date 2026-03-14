@@ -1,0 +1,11 @@
+{
+  "run_id": "<run-id>",
+  "phase": "plan",
+  "role": "planner",
+  "loop": 1,
+  "status": "draft",
+  "sources": [
+    "<approved-spec>"
+  ],
+  "sections": []
+}
