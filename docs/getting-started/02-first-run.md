@@ -1,156 +1,102 @@
-# First Run
+# Your First Run
 
-This tutorial walks you through installing SuperAgent, validating your environment, building host exports, and exploring the generated structure.
+Walk through the full SuperAgent pipeline: describe a task, clarify it, execute with TDD, and review.
 
-## What you'll build
+## What you'll do
 
-A SuperAgent-enabled project with a validated environment, built host exports, and a confirmed-healthy repo surface.
+Take a vague requirement through the full pipeline and see what each role produces.
 
 ## Prerequisites
 
-- **Node.js >= 18** (20+ recommended)
-- **git**
-- A terminal (bash, zsh, or similar)
-- A project directory where you want to use SuperAgent
+- SuperAgent installed (see [Installation](01-installation.md))
+- An AI host open in your project (Claude, Codex, Gemini, or Cursor)
 
-## Step 1: Clone and install
+## Step 1: Describe your task
 
-Clone the SuperAgent repository and install dependencies:
+Tell your agent what you want to build. For example:
 
-```bash
-git clone https://github.com/MohamedAbdallah-14/super-agent.git
-cd super-agent
-npm install
-```
+> "Add a user registration endpoint with email validation"
 
-Expected output (last lines):
+The clarifier role activates and reads your brief.
 
-```
-added XX packages in Xs
-```
+## Step 2: Clarify
 
-This installs the minimal runtime dependencies (`ajv`, `yaml`, `gray-matter`) and the built-in CLI tooling.
+The clarifier asks questions and produces a structured spec with acceptance criteria. It escalates ambiguity — it never assumes.
 
-## Step 2: Run doctor check
+**Expected output:**
+- Acceptance criteria (testable, specific)
+- Open questions resolved
+- Scope boundaries defined
+- Assumptions and non-goals listed
 
-The `doctor` command validates the active repo surface in one pass:
+If the clarifier can't resolve ambiguity, it escalates to you rather than guessing.
 
-```bash
-npx superagent doctor
-```
+## Step 3: Spec Challenge (approval gate)
 
-Expected output:
+A reviewer (different from the clarifier) adversarially reviews the spec. The reviewer checks for gaps, contradictions, and unstated assumptions.
 
-```
-PASS manifest: Manifest is valid.
-PASS hooks: Hook definitions are valid.
-PASS host-exports: All required host export directories exist.
-```
+**Expected output:** Gate decision — APPROVED or REJECTED with specific reasons.
 
-Doctor checks three things:
-1. The manifest (`superagent.manifest.yaml`) is valid against its schema
-2. Canonical hook definitions match the manifest's required hook roster
-3. Host export directories exist under `exports/hosts/`
+**Your action:** You must explicitly approve the spec before planning begins. If rejected, it loops back to clarify with the reviewer's feedback.
 
-If any check fails, doctor tells you exactly which surface to fix.
+## Step 4: Plan (approval gate)
 
-## Step 3: Validate canonical sources
+The planner breaks the approved spec into ordered, testable tasks with dependencies.
 
-You can also run individual validators for more detail:
+The plan-review phase runs adversarial review on the plan — checking for missing edge cases, incorrect ordering, and scope creep.
 
-```bash
-npx superagent validate manifest
-```
+**Expected output:** Task breakdown with:
+- Implementation order and dependencies
+- Test strategy per task
+- Estimated complexity
 
-Expected output:
+**Your action:** You must explicitly approve the plan before execution begins.
 
-```
-PASS: Manifest is valid.
-```
+## Step 5: Execute
 
-```bash
-npx superagent validate hooks
-```
+The executor implements each task with TDD:
+1. Write a failing test (RED)
+2. Write minimal code to pass (GREEN)
+3. Refactor while green (REFACTOR)
+4. Commit with conventional message
 
-Expected output:
+The composition engine loads role-specific expertise modules automatically — the executor gets modules on how to build, anti-patterns to avoid, and stack-specific guidance.
 
-```
-PASS: Hook definitions are valid.
-```
+**Expected output:**
+- Test files (failing → passing)
+- Implementation code
+- Conventional commits at each step
 
-```bash
-npx superagent validate docs
-```
+## Step 6: Review
 
-This checks `docs/truth-claims.yaml` for stale command claims and broken local doc links.
+The reviewer (never the executor) performs adversarial review against the acceptance criteria from the spec.
 
-## Step 4: Build host exports
+**Expected output:** Review artifact with:
+- Pass/fail per acceptance criterion
+- Findings with severity and evidence
+- Recommendation: APPROVE, REQUEST_CHANGES, or REJECT
 
-Generate native host packages for Claude, Codex, Gemini, and Cursor:
+## Step 7: Learn
 
-```bash
-npx superagent export build
-```
+The learner captures what worked and what didn't. Proposed learnings go to `memory/learnings/proposed/` and require explicit review before promotion.
 
-Expected output:
+Only learnings whose file patterns overlap the current task are loaded in future runs — the system gets smarter per-project without drifting.
 
-```
-Generated host exports for claude, codex, gemini, cursor.
-```
+**Expected output:** Proposed learnings with scope tags.
 
-This reads canonical role files, workflow files, and the manifest, then writes host-specific packages under `exports/hosts/`:
+## Under the hood
 
-- **Claude:** `CLAUDE.md`, `.claude/settings.json`, `.claude/agents/*`, `.claude/commands/*`
-- **Codex:** `AGENTS.md`
-- **Gemini:** `GEMINI.md`
-- **Cursor:** `.cursor/rules/superagent-core.mdc`, `.cursor/hooks.json`
+The 6 steps above map to 14 internal phases:
 
-## Step 5: Verify exports are fresh
-
-Check that generated host packages match current canonical sources:
-
-```bash
-npx superagent export --check
-```
-
-If this passes with exit code 0, your exports are in sync. If canonical sources changed after the last export, the check fails and tells you to re-run `export build`.
-
-## Step 6: Explore the generated structure
-
-Key directories to understand:
-
-```
-super-agent/
-  roles/              # Canonical role contracts (10 roles)
-  workflows/          # Phase entrypoints (14 workflows)
-  skills/             # Reusable in-host procedures
-  hooks/              # Hook contracts and guard scripts
-  expertise/          # 255 curated domain knowledge modules
-  templates/          # Artifact templates and example payloads
-  schemas/            # Validation schemas (JSON Schema)
-  exports/hosts/      # Generated host packages
-  tooling/            # CLI source
-  docs/               # Documentation (you are here)
-  input/              # Operator briefing surface (read-only)
-  memory/             # Learnings and experiments
-```
+| User Stage | Internal Phases | Roles |
+|------------|----------------|-------|
+| **Clarify** | clarify → discover → specify → spec-challenge | clarifier, researcher, specifier, reviewer |
+| **Execute** | author → design → design-review → plan → plan-review → execute → verify | content-author, designer, planner, executor, verifier |
+| **Review** | review | reviewer |
+| **Learn** | learn → prepare-next | learner |
 
 ## What's next
 
-- **Deploy to your project:** Copy the relevant host export to your project directory. For Claude: `cp -r exports/hosts/claude/.claude ~/your-project/ && cp exports/hosts/claude/CLAUDE.md ~/your-project/`
-- **For Codex:** `cp exports/hosts/codex/AGENTS.md ~/your-project/`
-- **For Gemini:** `cp exports/hosts/gemini/GEMINI.md ~/your-project/`
-- **For Cursor:** `cp -r exports/hosts/cursor/.cursor ~/your-project/`
-
-Then open your AI host in your project directory. Your agent now operates with 10 canonical roles, a 14-phase delivery pipeline, and the full expertise composition engine.
-
-## Host-specific notes
-
-| Host | Primary export | Notes |
-|------|---------------|-------|
-| Claude | `CLAUDE.md` + `.claude/` | Full support including settings, agents, and commands |
-| Codex | `AGENTS.md` | Single-file operating model |
-| Gemini | `GEMINI.md` | Single-file operating model |
-| Cursor | `.cursor/` | Rules file + hooks JSON |
-
-Claude is the primary development host. Codex, Gemini, and Cursor exports are generated from the same canonical sources and maintain behavioral parity.
+- [Architecture](../concepts/architecture.md) — understand why SuperAgent works this way
+- [Roles & Workflows](../concepts/roles-and-workflows.md) — deep dive into role contracts
+- [Composition Engine](../concepts/composition-engine.md) — how expertise modules are loaded

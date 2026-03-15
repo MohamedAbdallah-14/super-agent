@@ -1,29 +1,78 @@
 # Installation
 
-SuperAgent installation is package-oriented.
+## Claude Code Plugin (recommended)
 
-## Core repo setup
+The fastest way to use SuperAgent. Two commands in Claude Code:
 
-1. Install dependencies:
-   - `npm install`
-2. Validate canonical sources:
-   - `superagent validate manifest`
-   - `superagent validate hooks`
-   - `superagent validate docs`
-3. Build host packages:
-   - `superagent export build`
-4. Check drift before release or commit:
-   - `superagent export --check`
+```bash
+/plugin marketplace add MohamedAbdallah-14/super-agent
+/plugin install superagent
+```
 
-## Optional state-root overrides
+Skills, roles, and workflows are now available in your Claude sessions. No files to copy, no exports needed.
 
-When testing indexing, recall, or status flows, you can keep state outside the default location:
+## Codex
 
-- `superagent index build --state-root <path>`
-- `superagent index refresh --state-root <path>`
-- `superagent recall file ... --state-root <path>`
-- `superagent status --run <id> --state-root <path>`
+Copy the generated host export to your project:
 
-## Runtime model
+```bash
+git clone https://github.com/MohamedAbdallah-14/super-agent.git
+cd super-agent && npm install && npx superagent export build
+cp exports/hosts/codex/AGENTS.md ~/your-project/
+```
 
-The host environment is the execution container. SuperAgent provides the operating model, guardrails, exports, and tooling. There are no background processes or services to manage.
+## Gemini
+
+```bash
+git clone https://github.com/MohamedAbdallah-14/super-agent.git
+cd super-agent && npm install && npx superagent export build
+cp exports/hosts/gemini/GEMINI.md ~/your-project/
+```
+
+## Cursor
+
+```bash
+git clone https://github.com/MohamedAbdallah-14/super-agent.git
+cd super-agent && npm install && npx superagent export build
+cp -r exports/hosts/cursor/.cursor ~/your-project/
+```
+
+## npm (global CLI)
+
+```bash
+npm install -g @superagent-os/cli
+```
+
+The CLI provides validation, export, indexing, and doctor commands. You still need to clone the source to build host exports.
+
+## Homebrew (macOS)
+
+```bash
+brew tap MohamedAbdallah-14/superagent
+brew install superagent
+```
+
+## From Source (contributors)
+
+```bash
+git clone https://github.com/MohamedAbdallah-14/super-agent.git
+cd super-agent
+npm install
+npx superagent doctor    # verify environment
+npm test                 # run test suite
+```
+
+## Verify
+
+After any install method, verify with:
+
+```bash
+npx superagent doctor
+# PASS manifest: Manifest is valid.
+# PASS hooks: Hook definitions are valid.
+# PASS host-exports: All required host export directories exist.
+```
+
+## What's next
+
+[Your First Run](02-first-run.md) — walk through the full pipeline from brief to shipped code.
