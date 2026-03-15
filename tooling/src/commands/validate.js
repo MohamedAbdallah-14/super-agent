@@ -263,6 +263,14 @@ export function runValidateCommand(parsed, context = {}) {
           return false;
         }
       })();
+      const hasBranch = hasGit && (() => {
+        try {
+          const name = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: projectRoot, encoding: 'utf8', stdio: 'pipe' }).trim();
+          return name !== 'HEAD';
+        } catch {
+          return false;
+        }
+      })();
       const hasChangelog = fs.existsSync(path.join(projectRoot, 'CHANGELOG.md'));
 
       const validators = [
@@ -271,7 +279,7 @@ export function runValidateCommand(parsed, context = {}) {
         { name: 'docs', fn: () => validateDocsAtProjectRoot(projectRoot) },
         { name: 'brand', fn: () => validateBrandTruthAtProjectRoot(projectRoot) },
         { name: 'runtime', fn: () => validateRuntimeSurfaceAtProjectRoot(projectRoot) },
-        { name: 'branches', fn: () => validateBranchName(), available: hasGit },
+        { name: 'branches', fn: () => validateBranchName(), available: hasBranch },
         { name: 'commits', fn: () => validateCommits({ cwd: projectRoot }), available: hasGit },
         { name: 'changelog', fn: () => validateChangelog(projectRoot, {}), available: hasChangelog },
       ];
