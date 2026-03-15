@@ -105,3 +105,18 @@ describe('featureName', () => {
 - Preserve evidence-first execution, TDD, verification, and conventional commits
 - Use isolated feature branches
 - Reference `superagent.manifest.yaml` for the project manifest and schema
+
+## Cursor Cloud specific instructions
+
+This is a pure JS CLI project — no web server, no database, no Docker. Setup is `npm ci` and you're ready.
+
+**Running the CLI locally:** Use `node tooling/src/cli.js <command>` instead of the `superagent` binary (the bin link may not be in PATH without a global install).
+
+**Known test caveat:** The test `runs all validators when called without a subcommand` in `tooling/test/validate.test.js` will fail if the current branch name doesn't match the allowed patterns (`main`, `develop`, `feat/*`, `feature/*`, `codex/*`, `release/*`, `hotfix/*`). Cloud agent branches like `cursor/*` trigger this. This is expected — the other 240 tests should all pass.
+
+**Key commands** (see Build Commands table above for full list):
+- `npm test` — run the full test suite (node:test, ~7s)
+- `node tooling/src/cli.js doctor` — verify environment health
+- `node tooling/src/cli.js validate manifest` — validate project manifest
+- `node tooling/src/cli.js export build` — regenerate host-native packages
+- `node tooling/src/cli.js export --check` — check for export drift
