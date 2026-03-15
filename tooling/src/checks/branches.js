@@ -5,6 +5,8 @@ const ALLOWED_PATTERNS = [
   /^develop$/,
   /^feat\/.+$/,
   /^feature\/.+$/,
+  /^fix\/.+$/,
+  /^chore\/.+$/,
   /^codex\/.+$/,
   /^release\/.+$/,
   /^hotfix\/.+$/,
@@ -35,7 +37,7 @@ export function validateBranchName(branchName) {
   if (!isAllowed) {
     return {
       exitCode: 1,
-      stderr: `Branch name validation failed:\n- "${branch}" does not match any allowed pattern: main, develop, feat/*, feature/*, codex/*, release/*, hotfix/*\n`,
+      stderr: `Branch name validation failed:\n- "${branch}" does not match any allowed pattern: main, develop, feat/*, feature/*, fix/*, chore/*, codex/*, release/*, hotfix/*\n`,
     };
   }
 
